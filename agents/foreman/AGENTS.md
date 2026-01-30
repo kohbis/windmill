@@ -266,8 +266,20 @@ Millerが `[MILLER:DONE]` または `[MILLER:BLOCKED]` で報告してきたら�
 
 ### 5. 状態更新
 
-自身の状態を `../../state/foreman.yaml` に反映する：
+自身の状態を `../../state/foreman.yaml` に反映する（スクリプト使用）：
 
+```bash
+# 作業開始時
+../../scripts/agent/update_state.sh foreman working task_YYYYMMDD_summary
+
+# 旦那待ち時
+../../scripts/agent/update_state.sh foreman waiting_patron task_YYYYMMDD_summary
+
+# 待機時
+../../scripts/agent/update_state.sh foreman idle
+```
+
+手動で更新する場合のフォーマット：
 ```yaml
 status: working  # idle, working, waiting_patron
 current_task: task_YYYYMMDD_summary

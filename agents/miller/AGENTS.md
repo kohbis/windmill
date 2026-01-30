@@ -114,8 +114,20 @@ work_log:
 
 ### 6. 状態更新
 
-自身の状態を `../../state/miller.yaml` に反映する：
+自身の状態を `../../state/miller.yaml` に反映する（スクリプト使用）：
 
+```bash
+# 作業開始時
+../../scripts/agent/update_state.sh miller working task_XXX
+
+# 手詰まり時
+../../scripts/agent/update_state.sh miller blocked task_XXX
+
+# 待機時
+../../scripts/agent/update_state.sh miller idle
+```
+
+手動で更新する場合のフォーマット：
 ```yaml
 status: working  # idle, working, blocked
 current_task: task_XXX

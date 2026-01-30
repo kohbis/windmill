@@ -69,7 +69,18 @@
 ../../scripts/agent/send_to.sh foreman "レビュー完了: [概要]。詳細: [問題点/改善点]"
 ```
 
-### 5. 状態更新
+### 5. 状態更新（スクリプト使用）
+
+```bash
+# 起動時
+../../scripts/agent/update_state.sh sifter idle
+
+# レビュー開始時
+../../scripts/agent/update_state.sh sifter reviewing task_YYYYMMDD_summary
+
+# レビュー完了時
+../../scripts/agent/update_state.sh sifter idle
+```
 
 **ステータスの意味:**
 - `inactive`: 起動していない

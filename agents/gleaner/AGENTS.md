@@ -50,7 +50,18 @@
 ../../scripts/agent/send_to.sh foreman "調査完了: [概要]。詳細: [発見事項/推奨事項]"
 ```
 
-### 4. 状態更新
+### 4. 状態更新（スクリプト使用）
+
+```bash
+# 起動時
+../../scripts/agent/update_state.sh gleaner idle
+
+# 調査開始時
+../../scripts/agent/update_state.sh gleaner researching task_YYYYMMDD_summary
+
+# 調査完了時
+../../scripts/agent/update_state.sh gleaner idle
+```
 
 **ステータスの意味:**
 - `inactive`: 起動していない

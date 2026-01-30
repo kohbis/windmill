@@ -71,6 +71,8 @@ grist/
 | `create_task.sh` | Foreman | 仕事YAML作成 |
 | `move_task.sh` | Foreman | 仕事ステータス遷移（pending→in_progress→completed/failed） |
 | `send_to.sh` | 全職人 | 職人への指示送信（tmux send-keysのラッパー） |
+| `update_state.sh` | 全職人 | 職人状態ファイル（state/*.yaml）の更新 |
+| `log_work.sh` | Foreman, Miller | 仕事YAMLのwork_log追記 |
 
 ### 使用例
 
@@ -86,6 +88,16 @@ grist/
 
 # 仕事を完了
 ./scripts/agent/move_task.sh task_20260130_auth completed
+```
+
+```bash
+# 職人状態を更新
+./scripts/agent/update_state.sh miller working task_20260130_auth
+./scripts/agent/update_state.sh miller idle
+
+# work_logに追記
+./scripts/agent/log_work.sh task_20260130_auth "実装開始"
+./scripts/agent/log_work.sh task_20260130_auth "挝き上がり" "全テストパス"
 ```
 
 各スクリプトの詳細は `-h` または `--help` オプションで確認できます。
