@@ -1,0 +1,15 @@
+# State files (use .yaml.template as template)
+state/*.yaml
+!state/*.yaml.template
+
+# Dashboard (use .md.template as template)
+dashboard.md
+
+# Task files (generated at runtime)
+tasks/**/*.yaml
+!tasks/**/.gitkeep
+
+# Feedback files (use .md.template as template)
+feedback/inbox.md
+feedback/archive.md
+!feedback/*.md.template
