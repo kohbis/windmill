@@ -73,6 +73,8 @@ grist/
 | `send_to.sh` | 全職人 | 職人への指示送信（tmux send-keysのラッパー） |
 | `update_state.sh` | 全職人 | 職人状態ファイル（state/*.yaml）の更新 |
 | `log_work.sh` | Foreman, Miller | 仕事YAMLのwork_log追記 |
+| `update_dashboard.sh` | Foreman | ダッシュボード自動更新・作業ログ追記 |
+| `complete_task.sh` | Foreman | 仕事完了レポート追記＋completedへ移動 |
 
 ### 使用例
 
@@ -98,6 +100,16 @@ grist/
 # work_logに追記
 ./scripts/agent/log_work.sh task_20260130_auth "実装開始"
 ./scripts/agent/log_work.sh task_20260130_auth "挝き上がり" "全テストパス"
+```
+
+```bash
+# ダッシュボード更新
+./scripts/agent/update_dashboard.sh
+./scripts/agent/update_dashboard.sh --log "Millerに指示送信"
+
+# 仕事完了（レポート追記＋completedへ移動）
+./scripts/agent/complete_task.sh task_20260130_auth "認証機能を実装" "passed"
+./scripts/agent/complete_task.sh task_20260130_auth "バグ修正" "passed" "追加の最適化推奨"
 ```
 
 各スクリプトの詳細は `-h` または `--help` オプションで確認できます。

@@ -299,32 +299,26 @@ Millerが `tmux send-keys` で報告してきたら：
 
 ### 仕事完了時の処理
 
-仕事が完了したら、仕事YAMLにレポートを追加してから completed に移動：
+仕事が完了したら、スクリプトでレポート追記と移動を一括実行：
 
-```yaml
-# 仕事YAMLに以下を追加
-status: completed
-completed_at: "YYYY-MM-DDTHH:MM:SS"
-completed_by: miller
-result:
-  summary: |
-    作業の概要（Millerからの報告を元に記載）。
-    何を実装/修正したかを簡潔に。
-  changes:
-    - file: path/to/file1
-      description: "変更内容の説明"
-    - file: path/to/file2
-      description: "変更内容の説明"
-  tests:
-    status: passed  # passed, failed, skipped
-    details: "テスト結果の詳細"
-  notes: |
-    補足事項、注意点、今後の課題など。
+```bash
+# 完了処理（レポート追記 + completedへ移動）
+../../scripts/agent/complete_task.sh task_YYYYMMDD_summary "作業概要" "passed"
+
+# 補足事項がある場合
+../../scripts/agent/complete_task.sh task_YYYYMMDD_summary "作業概要" "passed" "追加の注意点"
 ```
 
+このスクリプトが自動で以下を行います：
+- completed_at, completed_by, resultセクションを追記
+- statusをcompletedに更新
+- ファイルをtasks/completed/に移動
+
 レポート追加後：
-1. 仕事を `../../tasks/completed/` に移動
-2. `../../dashboard.md` を更新
+1. `../../dashboard.md` を更新
+```bash
+../../scripts/agent/update_dashboard.sh
+```
 
 ### 旦那への報告
 
@@ -359,21 +353,32 @@ result:
 
 ## dashboard.md管理（最重要）
 
-**親方は `../../dashboard.md` の更新責任者。各アクションの直後に必ず更新する。**
+**親方は `../../dashboard.md` の更新責任者。スクリプトを使って効率的に更新する。**
+
+### ダッシュボード更新スクリプト
+
+```bash
+# 全体更新（仕事キューの状態から自動生成）
+../../scripts/agent/update_dashboard.sh
+
+# 作業ログのみ追記
+../../scripts/agent/update_dashboard.sh --log "Millerに指示送信"
+../../scripts/agent/update_dashboard.sh --log "task_xxx 挽き上がり"
+```
 
 ### 更新タイミング一覧（必須）
 
-| アクション | dashboard.md更新内容 | タイミング |
-|-----------|---------------------|-----------|
-| 仕事YAML作成 | 「進行中」に追加 + 作業ログ | 作成直後 |
-| Millerへ指示送信 | 作業ログに記録 | 送信直後 |
-| Gleanerへ調査持ち込み | 作業ログに記録 | 送信直後 |
-| Sifterへレビュー持ち込み | 作業ログに記録 | 送信直後 |
-| 職人から報告受信 | 作業ログに記録 | 受信直後 |
-| 仕事完了 | 「完了」へ移動 + 作業ログ | 完了確定直後 |
-| 問題発生 | 「要対応」に追加 + 作業ログ | 発生直後 |
+| アクション | コマンド | タイミング |
+|-----------|---------|-----------|
+| 仕事YAML作成 | `update_dashboard.sh --log "task_xxx 作成"` | 作成直後 |
+| Millerへ指示送信 | `update_dashboard.sh --log "Millerに指示送信"` | 送信直後 |
+| Gleanerへ調査持ち込み | `update_dashboard.sh --log "Gleanerに調査持ち込み"` | 送信直後 |
+| Sifterへレビュー持ち込み | `update_dashboard.sh --log "Sifterにレビュー持ち込み"` | 送信直後 |
+| 職人から報告受信 | `update_dashboard.sh --log "Millerから挽き上がり報告"` | 受信直後 |
+| 仕事完了 | `update_dashboard.sh` | 完了確定直後 |
+| 問題発生 | `update_dashboard.sh --log "問題発生: 内容"` | 発生直後 |
 
-**注意: tmux send-keysで職人に指示を送ったら、その直後にdashboard.mdを更新する習慣をつける**
+**注意: 職人に指示を送ったら、その直後にdashboard.mdを更新する習慣をつける**
 
 ### 仕事割り当て時のチェックリスト
 
