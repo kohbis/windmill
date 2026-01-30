@@ -56,10 +56,22 @@
 旦那から持ち込みを受けたら：
 
 1. 仕事を理解し、必要なら質問して明確化する
-2. 仕事YAMLを作成し `../../tasks/pending/` に配置する
+2. **スクリプトで仕事YAMLを作成する**
 3. `../../state/foreman.yaml` を更新する
-4. Millerにtmux send-keysで指示を送る
+4. **スクリプトでMillerに指示を送る**
 
+**仕事YAML作成（スクリプト使用）:**
+```bash
+../../scripts/agent/create_task.sh "タイトル" "ステップ1" "ステップ2" "ステップ3"
+
+# オプション: カスタムIDを指定
+../../scripts/agent/create_task.sh --id task_20260130_auth "タイトル" "ステップ1"
+
+# オプション: コンテキストを追加
+../../scripts/agent/create_task.sh --context "前回の続き" "タイトル" "ステップ1"
+```
+
+**手動で作成する場合のフォーマット:**
 ```yaml
 # ../../tasks/pending/task_YYYYMMDD_summary.yaml の形式
 # 例: task_20260130_auth_feature.yaml
@@ -79,25 +91,21 @@ created_at: "YYYY-MM-DD HH:MM:SS"
 
 Millerに仕事を割り当てる際の手順：
 
-1. **仕事を in_progress に移動する**（親方のみが移動を行う）
+1. **仕事を in_progress に移動する**（スクリプト使用）
 ```bash
-mv ../../tasks/pending/task_YYYYMMDD_summary.yaml ../../tasks/in_progress/
+../../scripts/agent/move_task.sh task_YYYYMMDD_summary in_progress miller
+```
+このスクリプトが自動で以下を行います：
+- ファイルを pending/ から in_progress/ に移動
+- status を in_progress に更新
+- assigned_to を miller に更新
+
+2. **Millerに指示を送る**（スクリプト使用）
+```bash
+../../scripts/agent/send_to.sh miller "../../tasks/in_progress/task_YYYYMMDD_summary.yaml を処理してください"
 ```
 
-2. **仕事YAMLを更新する**
-```bash
-# status と assigned_to を更新
-# status: pending -> in_progress
-# assigned_to: miller
-```
-
-3. **Millerに指示を送る**（重要: tmux send-keysは2分割で送る）
-```bash
-tmux send-keys -t windmill:windmill.2 "../../tasks/in_progress/task_YYYYMMDD_summary.yaml を処理してください"
-tmux send-keys -t windmill:windmill.2 Enter
-```
-
-4. **dashboard.mdを更新する**
+3. **dashboard.mdを更新する**
 
 ### 3. 進捗管理（重要）
 
@@ -137,17 +145,18 @@ Millerが `[MILLER:DONE]` または `[MILLER:BLOCKED]` で報告してきたら�
 3. 継続 (in_progress) - 追加作業が必要
 ```
 
-4. **旦那の判断を受けて、仕事を移動する**
+4. **旦那の判断を受けて、仕事を移動する**（スクリプト使用）
 
 ```bash
 # 受け取りの場合
-mv ../../tasks/in_progress/task_YYYYMMDD_summary.yaml ../../tasks/completed/
+../../scripts/agent/move_task.sh task_YYYYMMDD_summary completed
 
 # 中断/保留の場合
-mv ../../tasks/in_progress/task_YYYYMMDD_summary.yaml ../../tasks/failed/
+../../scripts/agent/move_task.sh task_YYYYMMDD_summary failed
 
 # 継続の場合（移動しない）
 # 追加指示をMillerに送る
+../../scripts/agent/send_to.sh miller "追加指示内容"
 ```
 
 5. **受け取りの場合のみ、仕事完了レポートを作成する**
@@ -178,10 +187,9 @@ mv ../../tasks/in_progress/task_YYYYMMDD_summary.yaml ../../tasks/failed/
 
 2. **起動完了を待つ（数秒）**
 
-3. **調査持ち込みを送る**
+3. **調査持ち込みを送る**（スクリプト使用）
 ```bash
-tmux send-keys -t windmill:windmill.3 "【調査持ち込み】task_YYYYMMDD_summary: 〇〇について調べてください。調査ポイント: [具体的な質問/調査内容]"
-tmux send-keys -t windmill:windmill.3 Enter
+../../scripts/agent/send_to.sh gleaner "【調査持ち込み】task_YYYYMMDD_summary: 〇〇について調べてください。調査ポイント: [具体的な質問/調査内容]"
 ```
 
 4. **Gleanerからの報告を待つ**（`[GLEANER:DONE]` で報告される）
@@ -198,10 +206,9 @@ tmux send-keys -t windmill:windmill.3 Enter
 
 2. **起動完了を待つ（数秒）**
 
-3. **レビュー持ち込みを送る**
+3. **レビュー持ち込みを送る**（スクリプト使用）
 ```bash
-tmux send-keys -t windmill:windmill.4 "【レビュー持ち込み】task_YYYYMMDD_summary: 以下のファイルを見てください。対象: src/xxx.js, src/yyy.js"
-tmux send-keys -t windmill:windmill.4 Enter
+../../scripts/agent/send_to.sh sifter "【レビュー持ち込み】task_YYYYMMDD_summary: 以下のファイルを見てください。対象: src/xxx.js, src/yyy.js"
 ```
 
 4. **Sifterからの報告を待つ**（`[SIFTER:APPROVE]` または `[SIFTER:REQUEST_CHANGES]`）
@@ -247,16 +254,14 @@ tmux send-keys -t windmill:windmill.4 Enter
 - 3回直しても承認されない場合は、旦那に判断を仰ぐ
 - `[FOREMAN:WAITING_PATRON]` マーカーで報告
 
-**直し指示のフォーマット:**
+**直し指示のフォーマット:**（スクリプト使用）
 ```bash
-tmux send-keys -t windmill:windmill.2 "【直し依頼】task_YYYYMMDD_summary: Sifterからの指摘を直してください。指摘内容: [具体的な指摘]"
-tmux send-keys -t windmill:windmill.2 Enter
+../../scripts/agent/send_to.sh miller "【直し依頼】task_YYYYMMDD_summary: Sifterからの指摘を直してください。指摘内容: [具体的な指摘]"
 ```
 
-**再レビュー持ち込みのフォーマット:**
+**再レビュー持ち込みのフォーマット:**（スクリプト使用）
 ```bash
-tmux send-keys -t windmill:windmill.4 "【再レビュー持ち込み】task_YYYYMMDD_summary: Millerが直しを完了しました。直し箇所を確認してください。対象: [直しファイル]"
-tmux send-keys -t windmill:windmill.4 Enter
+../../scripts/agent/send_to.sh sifter "【再レビュー持ち込み】task_YYYYMMDD_summary: Millerが直しを完了しました。直し箇所を確認してください。対象: [直しファイル]"
 ```
 
 ### 5. 状態更新

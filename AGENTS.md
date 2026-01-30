@@ -61,6 +61,35 @@ grist/
     └── archive.md             # 対応済みフィードバック
 ```
 
+## エージェント用スクリプト
+
+`scripts/agent/` にエージェント（職人）が使用するスクリプトを配置しています。
+これらはトークン効率化と再現性向上のために作成されました。
+
+| スクリプト | 使用者 | 用途 |
+|-----------|--------|------|
+| `create_task.sh` | Foreman | 仕事YAML作成 |
+| `move_task.sh` | Foreman | 仕事ステータス遷移（pending→in_progress→completed/failed） |
+| `send_to.sh` | 全職人 | 職人への指示送信（tmux send-keysのラッパー） |
+
+### 使用例
+
+```bash
+# 仕事YAML作成
+./scripts/agent/create_task.sh "認証機能の実装" "ステップ1" "ステップ2"
+
+# 仕事をMillerに割り当て
+./scripts/agent/move_task.sh task_20260130_auth in_progress miller
+
+# Millerに指示を送る
+./scripts/agent/send_to.sh miller "tasks/in_progress/task_20260130_auth.yaml を処理してください"
+
+# 仕事を完了
+./scripts/agent/move_task.sh task_20260130_auth completed
+```
+
+各スクリプトの詳細は `-h` または `--help` オプションで確認できます。
+
 ## 使い方
 
 ### 初期セットアップ

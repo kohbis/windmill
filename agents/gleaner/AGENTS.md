@@ -46,9 +46,8 @@
 2. 親方に報告
 
 ```bash
-# 調査結果報告
-tmux send-keys -t windmill:windmill.1 "調査完了: [概要]。詳細: [発見事項/推奨事項]"
-tmux send-keys -t windmill:windmill.1 Enter
+# 調査結果報告（推奨: send_to.sh スクリプトを使用）
+../../scripts/agent/send_to.sh foreman "調査完了: [概要]。詳細: [発見事項/推奨事項]"
 ```
 
 ### 4. 状態更新
@@ -105,7 +104,14 @@ last_updated: "YYYY-MM-DD HH:MM:SS"
 
 ## 通信プロトコル
 
-**重要: tmux send-keysは2分割で送る**
+**推奨: send_to.sh スクリプトを使用**
+
+```bash
+# 親方への報告（推奨）
+../../scripts/agent/send_to.sh foreman "[GLEANER:DONE] ライブラリ調査完了、推奨: lodash"
+```
+
+**直接tmux send-keysを使う場合:**（重要: 2分割で送る）
 
 ```bash
 tmux send-keys -t windmill:windmill.1 "メッセージ"

@@ -55,8 +55,8 @@ work_log:
 
 3. **親方に挽き上がり報告する**（ステータスマーカー付き）
 ```bash
-tmux send-keys -t windmill:windmill.1 "[MILLER:DONE] task_YYYYMMDD_summary 挽き上がり。変更ファイル: src/xxx.js, src/yyy.js。テスト: 全て通過。"
-tmux send-keys -t windmill:windmill.1 Enter
+# 推奨: send_to.sh スクリプトを使用
+../../scripts/agent/send_to.sh foreman "[MILLER:DONE] task_YYYYMMDD_summary 挝き上がり。変更ファイル: src/xxx.js, src/yyy.js。テスト: 全て通過。"
 ```
 
 **重要: 挽き手は仕事を completed に移動しない。移動は親方が旦那確認後に行う。**
@@ -84,8 +84,8 @@ work_log:
 ```
 5. **親方に直し完了報告する**
 ```bash
-tmux send-keys -t windmill:windmill.1 "[MILLER:DONE] task_XXX 直し完了。直し内容: [直し箇所の説明]。"
-tmux send-keys -t windmill:windmill.1 Enter
+# 推奨: send_to.sh スクリプトを使用
+../../scripts/agent/send_to.sh foreman "[MILLER:DONE] task_XXX 直し完了。直し内容: [直し箇所の説明]。"
 ```
 
 **重要: 直し完了後は親方がSifterに再レビューを依頼する。直接Sifterに連絡しない。**
@@ -106,8 +106,8 @@ work_log:
 
 3. **親方に問題報告する**（ステータスマーカー付き）
 ```bash
-tmux send-keys -t windmill:windmill.1 "[MILLER:BLOCKED] task_XXX で問題発生: [具体的な問題内容]。対応方法について指示をください。"
-tmux send-keys -t windmill:windmill.1 Enter
+# 推奨: send_to.sh スクリプトを使用
+../../scripts/agent/send_to.sh foreman "[MILLER:BLOCKED] task_XXX で問題発生: [具体的な問題内容]。対応方法について指示をください。"
 ```
 
 **重要: 挽き手は仕事を failed に移動しない。移動は親方が旦那確認後に行う。**
@@ -125,7 +125,14 @@ last_updated: "YYYY-MM-DD HH:MM:SS"
 
 ## 通信プロトコル
 
-**重要: tmux send-keysは2分割で送る**
+**推奨: send_to.sh スクリプトを使用**
+
+```bash
+# 親方への報告（推奨）
+../../scripts/agent/send_to.sh foreman "[MILLER:DONE] task_XXX 挝き上がり。変更ファイル: src/xxx.js。テスト: 全て通過。"
+```
+
+**直接tmux send-keysを使う場合:**（重要: 2分割で送る）
 
 ```bash
 # 親方への報告
@@ -150,8 +157,8 @@ tmux send-keys -t windmill:windmill.1 Enter
 
 例：
 ```bash
-tmux send-keys -t windmill:windmill.1 "[MILLER:DONE] task_001 挽き上がりました"
-tmux send-keys -t windmill:windmill.1 Enter
+# 推奨: send_to.sh スクリプトを使用
+../../scripts/agent/send_to.sh foreman "[MILLER:DONE] task_001 挝き上がりました"
 ```
 
 ## 禁止事項

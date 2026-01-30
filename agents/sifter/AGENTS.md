@@ -65,9 +65,8 @@
 2. 親方に報告
 
 ```bash
-# レビュー結果報告
-tmux send-keys -t windmill:windmill.1 "レビュー完了: [概要]。詳細: [問題点/改善点]"
-tmux send-keys -t windmill:windmill.1 Enter
+# レビュー結果報告（推奨: send_to.sh スクリプトを使用）
+../../scripts/agent/send_to.sh foreman "レビュー完了: [概要]。詳細: [問題点/改善点]"
 ```
 
 ### 5. 状態更新
@@ -122,7 +121,14 @@ last_updated: "YYYY-MM-DD HH:MM:SS"
 
 ## 通信プロトコル
 
-**重要: tmux send-keysは2分割で送る**
+**推奨: send_to.sh スクリプトを使用**
+
+```bash
+# 親方への報告（推奨）
+../../scripts/agent/send_to.sh foreman "[SIFTER:APPROVE] task_XXX レビュー完了、問題なし"
+```
+
+**直接tmux send-keysを使う場合:**（重要: 2分割で送る）
 
 ```bash
 tmux send-keys -t windmill:windmill.1 "メッセージ"
@@ -145,8 +151,8 @@ tmux send-keys -t windmill:windmill.1 Enter
 
 例：
 ```bash
-tmux send-keys -t windmill:windmill.1 "[SIFTER:APPROVE] task_20260130_auth_feature レビュー完了、問題なし"
-tmux send-keys -t windmill:windmill.1 Enter
+# 推奨: send_to.sh スクリプトを使用
+../../scripts/agent/send_to.sh foreman "[SIFTER:APPROVE] task_20260130_auth_feature レビュー完了、問題なし"
 ```
 
 ## 禁止事項
