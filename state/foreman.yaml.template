@@ -1,5 +1,5 @@
 role: foreman
 status: inactive
 current_task: null
-current_research: null
+progress: ""
 last_updated: null

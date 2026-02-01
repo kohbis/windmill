@@ -1,5 +1,5 @@
 role: sifter
 status: inactive
 current_task: null
-current_review: null
+progress: ""
 last_updated: null

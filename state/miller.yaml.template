@@ -1,5 +1,5 @@
 role: miller
 status: inactive
 current_task: null
-progress: null
+progress: ""
 last_updated: null

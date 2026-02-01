@@ -44,6 +44,14 @@ fi
 
 echo "Windmill (風車小屋) を起動中..."
 
+# 状態ファイルをテンプレートから初期化
+echo "状態ファイルを初期化中..."
+for agent in foreman miller sifter gleaner; do
+    if [ -f "$MILL_ROOT/state/${agent}.yaml.template" ]; then
+        cp "$MILL_ROOT/state/${agent}.yaml.template" "$MILL_ROOT/state/${agent}.yaml"
+    fi
+done
+
 # tmuxセッション作成
 tmux new-session -d -s "$SESSION_NAME" -n "$WINDOW_NAME" -x 200 -y 50
 
