@@ -1,58 +1,53 @@
-# Windmill 🌀
+# Windmill
 
-風車小屋 - マルチAIエージェント開発環境
+マルチAIエージェント協調開発フレームワーク
 
-## 概要
+複数のAIコーディングエージェントが役割分担して開発タスクを遂行する、tmuxベースのマルチエージェント環境です。
 
-複数のAIコーディングエージェントが協調して作業するマルチエージェントフレームワークです。
+## 特徴
 
-**対応エージェント:**
-- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) (Anthropic)
-- [OpenAI Codex CLI](https://github.com/openai/codex) (OpenAI)
-- [GitHub Copilot CLI](https://docs.github.com/en/copilot/concepts/agents/about-copilot-cli) (GitHub)
+- **役割分担**: 管理・実装・レビュー・調査の4エージェント体制
+- **自動協調**: エージェント間のタスク受け渡しを自動化
+- **進捗可視化**: ダッシュボードでリアルタイムに状況把握
+- **マルチエージェント対応**: Claude Code / OpenAI Codex CLI / GitHub Copilot CLI
 
-**メタファー:**
-- 入力（穀物）: 旦那からの持ち込み・仕事
-- 処理（製粉）: 職人たちによる開発作業
-- 出力（粉）: 挽き上がったコード・成果物
+## 必要条件
 
-## 職人構成
+- macOS / Linux
+- [tmux](https://github.com/tmux/tmux) 3.0+
+- 以下のいずれかのAIエージェント:
+  - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) (Anthropic)
+  - [OpenAI Codex CLI](https://github.com/openai/codex) (OpenAI)
+  - [GitHub Copilot CLI](https://docs.github.com/en/copilot/concepts/agents/about-copilot-cli) (GitHub)
 
-| 役割 | 英名 | 責務 |
-|------|------|------|
-| 親方 | Foreman | 仕事の分解、進捗監視、旦那との対話（実装作業は行わない） |
-| 挽き手 | Miller | メインのコーディング・実装作業 |
-| 目利き | Sifter | コードレビュー、品質チェック（オンデマンド） |
-| 聞き役 | Gleaner | 調査、情報収集（オンデマンド） |
-
-## セットアップ
+## クイックスタート
 
 ```bash
+# 1. リポジトリをクローン
+git clone https://github.com/kohbis/windmill.git
+cd windmill
+
+# 2. セットアップ
 ./scripts/setup.sh
-```
 
-## 使い方
+# 3. 起動
+./scripts/start.sh ${AGENT_TYPE} # AGENT_TYPE: claude (default) | codex | copilot
+# e.g, ./scripts/start.sh codex
 
-### 起動
-
-```bash
-./scripts/start.sh
+# 4. tmuxセッションに接続
 tmux attach -t windmill
 ```
 
-Foremanが自動起動し、ヒアリングを開始します。
+起動後、Foremanが自動起動し、タスクのヒアリングを開始します。
 
-### 状況確認
+## エージェント構成
 
-```bash
-./scripts/status.sh
-```
-
-### 停止
-
-```bash
-./scripts/stop.sh
-```
+| 役割 | 名前 | 責務 |
+|------|------|------|
+| 管理 | Foreman | タスク分解・進捗監視・ユーザー対話 |
+| 実装 | Miller | コーディング・実装作業 |
+| レビュー | Sifter | コードレビュー・品質チェック |
+| 調査 | Gleaner | 技術調査・情報収集 |
 
 ## tmuxレイアウト
 
@@ -66,31 +61,74 @@ Foremanが自動起動し、ヒアリングを開始します。
 └─────────────────┴──────────────┴──────────────┘
 ```
 
+## 基本的な使い方
+
+### タスクを依頼する
+
+Foremanペイン（ペイン1）でタスクを伝えます：
+
+```
+認証機能を実装してください。JWTトークンを使用し、
+ログイン・ログアウト・トークンリフレッシュのエンドポイントが必要です。
+```
+
+Foremanがタスクを分解し、Millerに指示を出します。
+
+### 状況確認・停止
+
+```bash
+# 状況確認
+./scripts/status.sh
+
+# 停止
+./scripts/stop.sh
+```
+
+## ワークフロー例
+
+### 基本フロー
+```
+User → Foreman → Miller → Foreman → User
+       (分解)    (実装)   (報告)   (確認)
+```
+
+### 調査付きフロー
+```
+User → Foreman → Gleaner → Foreman → Miller → Foreman → User
+       (調査依頼)  (調査)   (結果共有)  (実装)   (報告)
+```
+
+### レビュー付きフロー
+```
+User → Foreman → Miller → Foreman → Sifter → Foreman → User
+       (実装依頼) (実装)   (レビュー依頼) (レビュー) (報告)
+```
+
 ## ディレクトリ構造
 
 ```
 windmill/
-├── agents/          # 職人プロンプト
-├── tasks/           # 仕事管理
-│   ├── pending/     # 待ち仕事
-│   ├── in_progress/ # 挽き中
-│   ├── completed/   # 挽き上がり
-│   └── failed/      # 中断/保留
-├── state/           # 職人状態
-├── feedback/        # フィードバック
-├── scripts/         # 操作スクリプト
-└── dashboard.md     # 進捗ダッシュボード
+├── agents/           # エージェントプロンプト
+│   ├── foreman/
+│   ├── miller/
+│   ├── sifter/
+│   └── gleaner/
+├── tasks/            # タスク管理
+│   ├── pending/      # 待機中
+│   ├── in_progress/  # 進行中
+│   ├── completed/    # 完了
+│   └── failed/       # 失敗/中断
+├── state/            # エージェント状態（YAML）
+├── feedback/         # フィードバック
+├── scripts/          # 操作スクリプト
+│   └── agent/        # エージェント用スクリプト
+└── dashboard.md      # 進捗ダッシュボード
 ```
 
-## 詳細
+## 詳細ドキュメント
 
-詳しい仕様は [AGENTS.md](AGENTS.md) を参照してください。
+詳しい仕様・設定については [AGENTS.md](AGENTS.md) を参照してください。
 
-## エージェント対応
+## ライセンス
 
-本フレームワークは `AGENTS.md` を使用しており、Claude Code と OpenAI Codex の両方で動作します。
-
-| ファイル | 用途 |
-|----------|------|
-| `AGENTS.md` | エージェント共通の指示（両AI対応） |
-| `CLAUDE.md` | Claude Code専用（AGENTS.mdを参照） |
+MIT License
