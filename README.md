@@ -20,7 +20,7 @@
   - [OpenAI Codex CLI](https://github.com/openai/codex) (OpenAI)
   - [GitHub Copilot CLI](https://docs.github.com/en/copilot/concepts/agents/about-copilot-cli) (GitHub)
 
-> **Warning**
+> [!WARNING]
 > 本フレームワークはエージェントを自動実行モードで起動します。
 > - Claude Code: `--dangerously-skip-permissions`
 > - OpenAI Codex CLI: `--full-auto`
