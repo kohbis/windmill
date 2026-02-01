@@ -20,6 +20,15 @@
   - [OpenAI Codex CLI](https://github.com/openai/codex) (OpenAI)
   - [GitHub Copilot CLI](https://docs.github.com/en/copilot/concepts/agents/about-copilot-cli) (GitHub)
 
+> **Warning**
+> 本フレームワークはエージェントを自動実行モードで起動します。
+> - Claude Code: `--dangerously-skip-permissions`
+> - OpenAI Codex CLI: `--full-auto`
+> - GitHub Copilot CLI: `--allow-all`
+>
+> これらのオプションにより、エージェントは確認なしでファイル操作やコマンド実行を行います。
+> 信頼できる環境でのみ使用してください。
+
 ## クイックスタート
 
 ```bash
