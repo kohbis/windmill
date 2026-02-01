@@ -20,9 +20,13 @@ case "$AGENT_TYPE" in
         AGENT_CMD="codex --full-auto"
         AGENT_NAME="OpenAI Codex CLI"
         ;;
+    copilot|g)
+        AGENT_CMD="copilot --allow-all-tools"
+        AGENT_NAME="GitHub Copilot CLI"
+        ;;
     *)
         echo "不明なエージェント: $AGENT_TYPE"
-        echo "使用法: $0 [claude|codex]"
+        echo "使用法: $0 [claude|codex|copilot]"
         exit 1
         ;;
 esac

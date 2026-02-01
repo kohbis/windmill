@@ -6,8 +6,7 @@ Windmill（風車小屋）は、複数のAIコーディングエージェント�
 
 **対応AIエージェント:**
 - Claude Code (Anthropic) - `CLAUDE.md` / `AGENTS.md`
-- OpenAI Codex CLI - `AGENTS.md`
-
+- OpenAI Codex CLI - `AGENTS.md`- GitHub Copilot CLI - `AGENTS.md` / `.github/copilot-instructions.md`
 **メタファー**:
 - 入力（穀物）: 旦那からの持ち込み・仕事
 - 処理（製粉）: 職人たちによる開発作業
@@ -171,6 +170,18 @@ tmux send-keys -t windmill:windmill.3 'codex --full-auto' Enter
 
 # Sifter（目利き）
 tmux send-keys -t windmill:windmill.4 'codex --full-auto' Enter
+```
+
+#### GitHub Copilot CLI の場合
+```bash
+# Miller（挽き手）
+tmux send-keys -t windmill:windmill.2 'copilot --allow-all-tools' Enter
+
+# Gleaner（聞き役）
+tmux send-keys -t windmill:windmill.3 'copilot --allow-all-tools' Enter
+
+# Sifter（目利き）
+tmux send-keys -t windmill:windmill.4 'copilot --allow-all-tools' Enter
 ```
 
 各職人は専用ディレクトリのAGENTS.mdを自動で読み込みます。
@@ -370,6 +381,15 @@ codex
 
 # 自動実行モード（承認なしで実行）
 codex --full-auto
+```
+
+### GitHub Copilot CLI
+```bash
+# 通常（毎回承認が必要）
+copilot
+
+# 自動実行モード（承認なしで実行）
+copilot --allow-all-tools
 ```
 
 緊急停止: `Ctrl+C` または `./scripts/stop.sh`

@@ -9,6 +9,7 @@
 **対応エージェント:**
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) (Anthropic)
 - [OpenAI Codex CLI](https://github.com/openai/codex) (OpenAI)
+- [GitHub Copilot CLI](https://docs.github.com/en/copilot/concepts/agents/about-copilot-cli) (GitHub)
 
 **メタファー:**
 - 入力（穀物）: 旦那からの持ち込み・仕事

@@ -13,6 +13,7 @@ AGENT_TYPE="${1:-claude}"
 case "$AGENT_TYPE" in
     claude|c) AGENT_CMD="claude --dangerously-skip-permissions" ;;
     codex|x) AGENT_CMD="codex --full-auto" ;;
+    copilot|g) AGENT_CMD="copilot --allow-all-tools" ;;
     *) echo "不明なエージェント: $AGENT_TYPE"; exit 1 ;;
 esac
 
