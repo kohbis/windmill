@@ -122,7 +122,7 @@ tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.4" "cd $MILL_ROOT/agents/sifter" E
 # コマンド送信完了を待つ
 sleep 0.3
 
-echo "職人起動中..."
+echo "職人準備中..."
 
 # Status監視を起動（左ペイン）
 tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.0" "watch -n 5 ./scripts/status.sh" Enter
@@ -165,5 +165,5 @@ echo "   └─────────────┴────────�
 echo ""
 echo "接続: tmux attach -t $SESSION_NAME"
 echo ""
-echo "全職人が持ち場につきました"
+echo "職人たちが持ち場につきました"
 echo "   緊急停止: Ctrl+C または ./scripts/stop.sh"
