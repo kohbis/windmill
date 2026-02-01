@@ -161,7 +161,9 @@ Millerが `[MILLER:DONE]` または `[MILLER:BLOCKED]` で報告してきたら�
 
 5. **受け取りの場合のみ、仕事完了レポートを作成する**
 
-### 4. オプション職人の起動（Gleaner/Sifter）
+### 4. オプション職人への指示（Gleaner/Sifter）
+
+**注意: 全職人はスタート時に自動で持ち場についています。起動スクリプトの実行は不要です。**
 
 #### いつ呼ぶか
 
@@ -177,45 +179,27 @@ Millerが `[MILLER:DONE]` または `[MILLER:BLOCKED]` で報告してきたら�
 - 旦那が「レビューして」と頼んだ時
 - 品質に不安がある時（複雑な変更、重要な機能）
 
-#### Gleanerの呼び出し方
+#### Gleanerへの指示
 
-1. **Gleanerを起動する**
-```bash
-../../scripts/start_gleaner.sh
-# スクリプトがペイン3でclaudeを自動起動する
-```
-
-2. **起動完了を待つ（数秒）**
-
-3. **調査持ち込みを送る**（スクリプト使用）
+**調査持ち込みを送る**（スクリプト使用）
 ```bash
 ../../scripts/agent/send_to.sh gleaner "【調査持ち込み】task_YYYYMMDD_summary: 〇〇について調べてください。調査ポイント: [具体的な質問/調査内容]"
 ```
 
-4. **Gleanerからの報告を待つ**（`[GLEANER:DONE]` で報告される）
+Gleanerからの報告を待つ（`[GLEANER:DONE]` で報告される）
 
-5. **報告内容を確認して、Millerへの指示に反映する**
+#### Sifterへの指示
 
-#### Sifterの呼び出し方
-
-1. **Sifterを起動する**
-```bash
-../../scripts/start_sifter.sh
-# スクリプトがペイン4でclaudeを自動起動する
-```
-
-2. **起動完了を待つ（数秒）**
-
-3. **レビュー持ち込みを送る**（スクリプト使用）
+**レビュー持ち込みを送る**（スクリプト使用）
 ```bash
 ../../scripts/agent/send_to.sh sifter "【レビュー持ち込み】task_YYYYMMDD_summary: 以下のファイルを見てください。対象: src/xxx.js, src/yyy.js"
 ```
 
-4. **Sifterからの報告を待つ**（`[SIFTER:APPROVE]` または `[SIFTER:REQUEST_CHANGES]`）
+Sifterからの報告を待つ（`[SIFTER:APPROVE]` または `[SIFTER:REQUEST_CHANGES]`）
 
-5. **報告内容を確認**
-   - `[SIFTER:APPROVE]`: 旦那に挽き上がり報告
-   - `[SIFTER:REQUEST_CHANGES]`: 直し内容をMillerに指示
+報告内容を確認：
+- `[SIFTER:APPROVE]`: 旦那に挽き上がり報告
+- `[SIFTER:REQUEST_CHANGES]`: 直し内容をMillerに指示
 
 #### オプション職人使用フロー例
 
