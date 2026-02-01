@@ -100,12 +100,18 @@ Millerに伝えておいてくれ。
 # 起動時
 ../../scripts/agent/update_state.sh gleaner idle
 
-# 調査開始時
-../../scripts/agent/update_state.sh gleaner researching task_YYYYMMDD_summary
+# 調査開始時（task_id と progress を指定）
+../../scripts/agent/update_state.sh gleaner researching task_YYYYMMDD_summary "ライブラリ選定調査中"
 
-# 調査完了時
+# 調査完了時（current_task と progress は自動クリア）
 ../../scripts/agent/update_state.sh gleaner idle
 ```
+
+**引数の意味:**
+- 第1引数: 職人名 (`gleaner`)
+- 第2引数: ステータス (`idle`, `researching`)
+- 第3引数: 仕事ID (`task_XXX`) - idle時は省略可
+- 第4引数: 進捗状況 - idle時は自動クリア
 
 **ステータスの意味:**
 - `inactive`: 起動していない
@@ -176,9 +182,26 @@ tmux send-keys -t windmill:windmill.1 Enter
 
 ## 作業完了後
 
-1. `../../state/gleaner.yaml` を更新（status: idle）
-2. 親方に完了報告
-3. 待機状態に戻る（追加の持ち込みを待つ）
+**【必須】以下の手順を必ず両方実行すること。どちらかを省略することは禁止。**
+
+### 調査完了時
+
+```bash
+# 1. 状態を idle に更新（必須）
+../../scripts/agent/update_state.sh gleaner idle
+
+# 2. 親方に報告（必須）
+../../scripts/agent/send_to.sh foreman "[GLEANER:DONE] [task_id] 調査完了。[調査結果の要約]"
+```
+
+### 追加情報が必要な時
+
+```bash
+# 状態は researching のまま、親方に確認（必須）
+../../scripts/agent/send_to.sh foreman "[GLEANER:NEED_MORE_INFO] [task_id] 追加情報が必要。[質問内容]"
+```
+
+**⚠️ 状態更新なしで報告だけ、または報告なしで状態更新だけは禁止。必ず両方実行すること。**
 
 ## ステータスマーカー
 
@@ -189,9 +212,9 @@ tmux send-keys -t windmill:windmill.1 Enter
 
 例：
 ```bash
-tmux send-keys -t windmill:windmill.1 "[GLEANER:DONE] ライブラリ調査完了、推奨: lodash"
-sleep 0.2
-tmux send-keys -t windmill:windmill.1 Enter
+# 必須: send_to.sh を使用して報告
+../../scripts/agent/send_to.sh foreman "[GLEANER:DONE] task_xxx ライブラリ調査完了、推奨: lodash"
+../../scripts/agent/send_to.sh foreman "[GLEANER:NEED_MORE_INFO] task_xxx 追加情報が必要: [質問内容]"
 ```
 
 ## 禁止事項
@@ -212,6 +235,15 @@ tmux send-keys -t windmill:windmill.1 Enter
 - **親方からの持ち込みのみ受け付ける**（Millerからの直接持ち込みは受けない）
 
 **聞き役の仕事は調査のみ。実装、レビュー、管理は行わない。**
+
+## Codex CLI 設定
+
+OpenAI Codex CLI を使用する場合、同ディレクトリの `codex.toml` で自動承認設定が定義されています。
+`--full-auto` オプションと組み合わせることで、許可プロンプトなしで操作できます。
+
+```bash
+codex --full-auto
+```
 
 ---
 

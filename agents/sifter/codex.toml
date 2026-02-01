@@ -1,0 +1,29 @@
+# Sifter (目利き) 用 Codex CLI 設定
+# 目利きはコードレビュー・品質チェックを担当
+
+[auto_approve]
+# 読み取り操作（レビューに必要）
+read = ["cat", "ls", "find", "grep", "head", "tail", "wc", "file", "diff"]
+
+# ファイル操作（状態ファイルのみ）
+write = ["touch"]
+
+# スクリプト実行
+execute = [
+  "bash",
+  "sh",
+  "../../scripts/agent/**",
+  "tmux send-keys"
+]
+
+# Git操作（読み取りのみ）
+git = ["git status", "git diff", "git log", "git show", "git blame"]
+
+[paths]
+allow = [
+  "../../**"
+]
+
+[paths.readonly]
+# 目利きは読み取りのみ、編集は基本しない
+allow = ["../../**"]

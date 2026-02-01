@@ -122,12 +122,18 @@
 # 起動時
 ../../scripts/agent/update_state.sh sifter idle
 
-# レビュー開始時
-../../scripts/agent/update_state.sh sifter reviewing task_YYYYMMDD_summary
+# レビュー開始時（task_id と progress を指定）
+../../scripts/agent/update_state.sh sifter reviewing task_YYYYMMDD_summary "コードレビュー中"
 
-# レビュー完了時
+# レビュー完了時（current_task と progress は自動クリア）
 ../../scripts/agent/update_state.sh sifter idle
 ```
+
+**引数の意味:**
+- 第1引数: 職人名 (`sifter`)
+- 第2引数: ステータス (`idle`, `reviewing`)
+- 第3引数: 仕事ID (`task_XXX`) - idle時は省略可
+- 第4引数: 進捗状況 - idle時は自動クリア
 
 **ステータスの意味:**
 - `inactive`: 起動していない
@@ -196,9 +202,29 @@ tmux send-keys -t windmill:windmill.1 Enter
 
 ## 作業完了後
 
-1. `../../state/sifter.yaml` を更新（status: idle）
-2. 親方に完了報告
-3. 待機状態に戻る（追加の持ち込みを待つ）
+**【必須】以下の手順を必ず両方実行すること。どちらかを省略することは禁止。**
+
+### レビュー完了時（承認）
+
+```bash
+# 1. 状態を idle に更新（必須）
+../../scripts/agent/update_state.sh sifter idle
+
+# 2. 親方に報告（必須）
+../../scripts/agent/send_to.sh foreman "[SIFTER:APPROVE] [task_id] レビュー完了、問題なし"
+```
+
+### レビュー完了時（直しあり）
+
+```bash
+# 1. 状態を idle に更新（必須）
+../../scripts/agent/update_state.sh sifter idle
+
+# 2. 親方に報告（必須）
+../../scripts/agent/send_to.sh foreman "[SIFTER:REQUEST_CHANGES] [task_id] 直しあり。[指摘内容]"
+```
+
+**⚠️ 状態更新なしで報告だけ、または報告なしで状態更新だけは禁止。必ず両方実行すること。**
 
 ## ステータスマーカー
 
@@ -232,6 +258,15 @@ tmux send-keys -t windmill:windmill.1 Enter
 - **親方からの持ち込みのみ受け付ける**（Millerからの直接持ち込みは受けない）
 
 **目利きの仕事はレビューのみ。実装、調査、管理は行わない。**
+
+## Codex CLI 設定
+
+OpenAI Codex CLI を使用する場合、同ディレクトリの `codex.toml` で自動承認設定が定義されています。
+`--full-auto` オプションと組み合わせることで、許可プロンプトなしで操作できます。
+
+```bash
+codex --full-auto
+```
 
 ---
 

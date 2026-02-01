@@ -158,15 +158,24 @@ work_log:
 自身の状態を `../../state/miller.yaml` に反映する（スクリプト使用）：
 
 ```bash
-# 作業開始時
-../../scripts/agent/update_state.sh miller working task_XXX
+# 作業開始時（task_id と progress を指定）
+../../scripts/agent/update_state.sh miller working task_XXX "実装開始"
 
-# 手詰まり時
-../../scripts/agent/update_state.sh miller blocked task_XXX
+# 作業中の進捗更新
+../../scripts/agent/update_state.sh miller working task_XXX "step2 完了、step3 作業中"
 
-# 待機時
+# 手詰まり時（問題内容を progress に記載）
+../../scripts/agent/update_state.sh miller blocked task_XXX "外部API接続エラー"
+
+# 待機時（current_task と progress は自動クリア）
 ../../scripts/agent/update_state.sh miller idle
 ```
+
+**引数の意味:**
+- 第1引数: 職人名 (`miller`)
+- 第2引数: ステータス (`idle`, `working`, `blocked`)
+- 第3引数: 仕事ID (`task_XXX`) - idle時は省略可
+- 第4引数: 進捗状況 - idle時は自動クリア
 
 手動で更新する場合のフォーマット：
 ```yaml
@@ -258,6 +267,53 @@ tmux send-keys -t windmill:windmill.1 Enter
 1. `../../state/miller.yaml` を確認
 2. `../../tasks/in_progress/` に作業中仕事があれば継続
 3. 親方からの指示を待つ
+
+## 【重要】作業完了時の必須手順
+
+**⚠️ 作業完了・手詰まり時は、以下の手順を必ず両方実行すること。どちらかを省略することは禁止。**
+
+### 挽き上がり時（作業完了）
+
+```bash
+# 1. 状態を idle に更新（必須）
+../../scripts/agent/update_state.sh miller idle
+
+# 2. 親方に報告（必須）
+../../scripts/agent/send_to.sh foreman "[MILLER:DONE] [task_id] 挽き上がり。変更ファイル: [files]。テスト: [結果]"
+```
+
+### 直し完了時
+
+```bash
+# 1. 状態を idle に更新（必須）
+../../scripts/agent/update_state.sh miller idle
+
+# 2. 親方に報告（必須）
+../../scripts/agent/send_to.sh foreman "[MILLER:DONE] [task_id] 直し完了。直し内容: [内容]"
+```
+
+### 手詰まり時
+
+```bash
+# 1. 状態を blocked に更新（必須、問題内容を progress に記載）
+../../scripts/agent/update_state.sh miller blocked [task_id] "[問題内容]"
+
+# 2. 親方に報告（必須）
+../../scripts/agent/send_to.sh foreman "[MILLER:BLOCKED] [task_id] 手詰まり。問題: [問題内容]"
+```
+
+**状態更新なしで報告だけ、または報告なしで状態更新だけは禁止。必ず両方実行すること。**
+
+---
+
+## Codex CLI 設定
+
+OpenAI Codex CLI を使用する場合、同ディレクトリの `codex.toml` で自動承認設定が定義されています。
+`--full-auto` オプションと組み合わせることで、許可プロンプトなしで操作できます。
+
+```bash
+codex --full-auto
+```
 
 ---
 

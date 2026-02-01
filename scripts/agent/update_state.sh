@@ -4,7 +4,9 @@
 #
 # 使用例:
 #   ./scripts/agent/update_state.sh miller working task_xxx
+#   ./scripts/agent/update_state.sh miller working task_xxx "実装中"
 #   ./scripts/agent/update_state.sh miller idle
+#   ./scripts/agent/update_state.sh miller blocked task_xxx "APIエラーで停止"
 #   ./scripts/agent/update_state.sh sifter reviewing task_xxx
 
 set -e
@@ -14,7 +16,7 @@ MILL_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 # ヘルプ表示
 show_help() {
     cat << EOF
-使用方法: update_state.sh <職人名> <status> [current_task]
+使用方法: update_state.sh <職人名> <status> [current_task] [progress]
 
 職人の状態ファイル（state/*.yaml）を更新します。
 
@@ -22,6 +24,7 @@ show_help() {
   職人名        foreman, miller, sifter, gleaner
   status        職人ごとの有効なステータス（下記参照）
   current_task  現在の仕事ID（idle以外の場合に指定）
+  progress      現在の進捗状況（任意、作業中/ブロック時に記載推奨）
 
 ステータス一覧:
   foreman:  idle, working, waiting_patron
@@ -30,11 +33,16 @@ show_help() {
   gleaner:  inactive, idle, researching
 
 例:
-  update_state.sh miller working task_20260130_auth
+  update_state.sh miller working task_20260130_auth "実装開始"
+  update_state.sh miller blocked task_20260130_auth "外部API接続エラー"
   update_state.sh miller idle
-  update_state.sh sifter reviewing task_20260130_auth
-  update_state.sh gleaner researching task_20260130_auth
-  update_state.sh foreman waiting_patron task_20260130_auth
+  update_state.sh sifter reviewing task_20260130_auth "コードレビュー中"
+  update_state.sh gleaner researching task_20260130_auth "ライブラリ調査中"
+  update_state.sh foreman waiting_patron task_20260130_auth "旦那の判断待ち"
+
+注意:
+  - idle/inactive 時は current_task と progress は自動的にクリアされます
+  - blocked 時は progress に問題内容を記載することを推奨します
 EOF
     exit 0
 }
@@ -47,6 +55,7 @@ fi
 AGENT="$1"
 STATUS="$2"
 CURRENT_TASK="${3:-null}"
+PROGRESS="${4:-}"
 
 # 職人名検証
 case "$AGENT" in
@@ -114,9 +123,17 @@ fi
 # タイムスタンプ
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
 
-# idle系の場合はcurrent_taskをnullに
+# idle系の場合はcurrent_taskとprogressをクリア
 if [ "$STATUS" = "idle" ] || [ "$STATUS" = "inactive" ]; then
     CURRENT_TASK="null"
+    PROGRESS=""
+fi
+
+# progressが空の場合の処理（YAMLで空文字列として保存）
+if [ -z "$PROGRESS" ]; then
+    PROGRESS_VALUE='""'
+else
+    PROGRESS_VALUE="\"$PROGRESS\""
 fi
 
 # YAMLを更新（sedで各フィールドを更新）
@@ -124,15 +141,18 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     # macOS
     sed -i '' "s/^status: .*/status: $STATUS/" "$STATE_FILE"
     sed -i '' "s/^current_task: .*/current_task: $CURRENT_TASK/" "$STATE_FILE"
+    sed -i '' "s/^progress: .*/progress: $PROGRESS_VALUE/" "$STATE_FILE"
     sed -i '' "s/^last_updated: .*/last_updated: \"$TIMESTAMP\"/" "$STATE_FILE"
 else
     # Linux
     sed -i "s/^status: .*/status: $STATUS/" "$STATE_FILE"
     sed -i "s/^current_task: .*/current_task: $CURRENT_TASK/" "$STATE_FILE"
+    sed -i "s/^progress: .*/progress: $PROGRESS_VALUE/" "$STATE_FILE"
     sed -i "s/^last_updated: .*/last_updated: \"$TIMESTAMP\"/" "$STATE_FILE"
 fi
 
 echo "状態更新完了: $AGENT"
 echo "  status: $STATUS"
 echo "  current_task: $CURRENT_TASK"
+echo "  progress: $PROGRESS"
 echo "  last_updated: $TIMESTAMP"

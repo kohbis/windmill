@@ -1,0 +1,37 @@
+# Miller (挽き手) 用 Codex CLI 設定
+# 挽き手は実装作業を担当
+
+[auto_approve]
+# 読み取り操作
+read = ["cat", "ls", "find", "grep", "head", "tail", "wc", "file"]
+
+# ファイル操作（プロジェクト全体）
+write = ["touch", "mkdir", "cp", "mv", "rm"]
+
+# スクリプト・コマンド実行
+execute = [
+  "bash",
+  "sh",
+  "python",
+  "python3",
+  "node",
+  "npm",
+  "yarn",
+  "pnpm",
+  "make",
+  "cargo",
+  "go",
+  "../../scripts/agent/**",
+  "tmux send-keys"
+]
+
+# テスト実行
+test = ["npm test", "pytest", "go test", "cargo test", "make test"]
+
+# Git操作
+git = ["git status", "git diff", "git log", "git add", "git commit"]
+
+[paths]
+allow = [
+  "../../**"
+]

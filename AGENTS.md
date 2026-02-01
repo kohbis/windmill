@@ -96,9 +96,10 @@ grist/
 ```
 
 ```bash
-# 職人状態を更新
-./scripts/agent/update_state.sh miller working task_20260130_auth
-./scripts/agent/update_state.sh miller idle
+# 職人状態を更新（第4引数でprogressを指定可能）
+./scripts/agent/update_state.sh miller working task_20260130_auth "実装開始"
+./scripts/agent/update_state.sh miller blocked task_20260130_auth "外部API接続エラー"
+./scripts/agent/update_state.sh miller idle  # idle時はcurrent_taskとprogressは自動クリア
 
 # work_logに追記
 ./scripts/agent/log_work.sh task_20260130_auth "実装開始"
@@ -388,6 +389,19 @@ codex
 # 自動実行モード（承認なしで実行）
 codex --full-auto
 ```
+
+**設定ファイル（codex.toml）について:**
+
+Codex CLI は `--full-auto` オプションだけでは、ファイル修正やスクリプト実行時に許可を求めることがあります。
+これを避けるため、各ディレクトリに `codex.toml` を配置しています：
+
+- `codex.toml` - プロジェクトルート（全体設定）
+- `agents/foreman/codex.toml` - 親方用（管理操作のみ許可）
+- `agents/miller/codex.toml` - 挽き手用（実装操作を許可）
+- `agents/gleaner/codex.toml` - 聞き役用（調査操作を許可）
+- `agents/sifter/codex.toml` - 目利き用（レビュー操作を許可）
+
+これらの設定ファイルで `[auto_approve]` セクションに許可するコマンドを定義しています。
 
 ### GitHub Copilot CLI
 ```bash

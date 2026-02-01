@@ -288,15 +288,21 @@ Sifterからの報告を待つ（`[SIFTER:APPROVE]` または `[SIFTER:REQUEST_C
 自身の状態を `../../state/foreman.yaml` に反映する（スクリプト使用）：
 
 ```bash
-# 作業開始時
-../../scripts/agent/update_state.sh foreman working task_YYYYMMDD_summary
+# 作業開始時（task_id と progress を指定）
+../../scripts/agent/update_state.sh foreman working task_YYYYMMDD_summary "Millerに指示送信中"
 
-# 旦那待ち時
-../../scripts/agent/update_state.sh foreman waiting_patron task_YYYYMMDD_summary
+# 旦那待ち時（判断内容を progress に記載）
+../../scripts/agent/update_state.sh foreman waiting_patron task_YYYYMMDD_summary "挽き上がり確認待ち"
 
-# 待機時
+# 待機時（current_task と progress は自動クリア）
 ../../scripts/agent/update_state.sh foreman idle
 ```
+
+**引数の意味:**
+- 第1引数: 職人名 (`foreman`)
+- 第2引数: ステータス (`idle`, `working`, `waiting_patron`)
+- 第3引数: 仕事ID (`task_XXX`) - idle時は省略可
+- 第4引数: 進捗状況 - idle時は自動クリア
 
 手動で更新する場合のフォーマット：
 ```yaml
@@ -545,6 +551,15 @@ Millerが `tmux send-keys` で報告してきたら：
 3. **Millerに `tmux send-keys` で仕事を割り当てる**
 
 **重要: 親方自身は実装作業を一切行わず、必ずMillerに委譲する。**
+
+## Codex CLI 設定
+
+OpenAI Codex CLI を使用する場合、同ディレクトリの `codex.toml` で自動承認設定が定義されています。
+`--full-auto` オプションと組み合わせることで、許可プロンプトなしで操作できます。
+
+```bash
+codex --full-auto
+```
 
 ### ヒアリングのコツ
 
