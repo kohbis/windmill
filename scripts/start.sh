@@ -44,42 +44,11 @@ fi
 
 echo "Windmill (風車小屋) を起動中..."
 
-# 状態ファイルをテンプレートから初期化
-echo "状態ファイルを初期化中..."
-for agent in foreman miller sifter gleaner; do
-    if [ -f "$MILL_ROOT/state/${agent}.yaml.template" ]; then
-        cp "$MILL_ROOT/state/${agent}.yaml.template" "$MILL_ROOT/state/${agent}.yaml"
-    fi
-done
-
-# ダッシュボードをテンプレートから初期化
-if [ -f "$MILL_ROOT/dashboard.md.template" ]; then
-    cp "$MILL_ROOT/dashboard.md.template" "$MILL_ROOT/dashboard.md"
-    # 最終更新とセットアップ完了のタイムスタンプを設定
-    TIMESTAMP=$(date '+%Y-%m-%d %H:%M')
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        sed -i '' "s/YYYY-MM-DD HH:MM/$TIMESTAMP/g" "$MILL_ROOT/dashboard.md"
-    else
-        sed -i "s/YYYY-MM-DD HH:MM/$TIMESTAMP/g" "$MILL_ROOT/dashboard.md"
-    fi
-fi
-
 # tmuxセッション作成
 tmux new-session -d -s "$SESSION_NAME" -n "$WINDOW_NAME" -x 200 -y 50
 
 # セッション作成を待つ
 sleep 0.2
-
-# レイアウト構築（ペイン作成のみ）
-# ┌─────────────────┬──────────────┬──────────────┐
-# │                 │   Miller     │   Sifter     │
-# │   Foreman       │   (ペイン2)  │   (ペイン3)  │
-# │   (ペイン0)     │              │              │
-# │                 ├──────────────┼──────────────┤
-# ├─────────────────┤   Gleaner    │   (予備)     │
-# │   Status        │   (ペイン4)  │   (ペイン5)  │
-# │   (ペイン1)     │              │              │
-# └─────────────────┴──────────────┴──────────────┘
 
 echo "ペイン構造を作成中..."
 
