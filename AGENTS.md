@@ -200,15 +200,21 @@ tmux send-keys -t windmill:windmill.4 'copilot --allow-all' Enter
 
 ### tmux send-keys（重要）
 
-職人間の通信は `tmux send-keys` を使用。**必ず2分割で送る**：
+職人間の通信は `tmux send-keys` を使用。**必ずsleep 0.2秒を挟んで2分割で送る**：
 
 ```bash
 # OK: 動く
 tmux send-keys -t windmill:windmill.1 "メッセージ"
+sleep 0.2
 tmux send-keys -t windmill:windmill.1 Enter
 
 # NG: 動かない
 tmux send-keys -t windmill:windmill.1 "メッセージ" Enter
+
+# NG: 動かない
+tmux send-keys -t windmill:windmill.1 "メッセージ"
+# No sleep
+tmux send-keys -t windmill:windmill.1 Enter
 ```
 
 ### ペイン番号

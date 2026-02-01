@@ -39,6 +39,7 @@ sed -i 's/^status: .*/status: idle/' "$MILL_ROOT/state/gleaner.yaml"
 
 # Claude/Codex自動起動
 tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.3" "$AGENT_CMD"
+sleep 0.2
 tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.3" Enter
 
 echo "Gleaner起動完了 (ペイン3)"

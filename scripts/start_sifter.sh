@@ -39,6 +39,7 @@ sed -i 's/^status: .*/status: idle/' "$MILL_ROOT/state/sifter.yaml"
 
 # Claude/Codex自動起動
 tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.4" "$AGENT_CMD"
+sleep 0.2
 tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.4" Enter
 
 echo "Sifter起動完了 (ペイン4)"

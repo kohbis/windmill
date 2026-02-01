@@ -76,6 +76,7 @@ fi
 
 # メッセージ送信（2分割ルール適用）
 tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.$PANE" "$MESSAGE"
+sleep 0.2
 tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.$PANE" Enter
 
 echo "送信完了: $TARGET (ペイン$PANE)"

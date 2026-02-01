@@ -190,6 +190,7 @@ last_updated: "YYYY-MM-DD HH:MM:SS"
 ```bash
 # 親方への報告
 tmux send-keys -t windmill:windmill.1 "報告メッセージ"
+sleep 0.2
 tmux send-keys -t windmill:windmill.1 Enter
 ```
 

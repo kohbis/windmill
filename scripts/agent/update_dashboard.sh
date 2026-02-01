@@ -64,28 +64,16 @@ TIME_ONLY=$(date '+%H:%M')
 # ログ追記のみの場合
 if [ "$LOG_ONLY" = true ] && [ -n "$LOG_MESSAGE" ]; then
     if [ -f "$DASHBOARD" ]; then
-        # 作業ログセクションに追記
-        # "## 作業ログ" の次の行に追加
-        TEMP_FILE=$(mktemp)
-        awk -v log="- $TIME_ONLY $LOG_MESSAGE" '
-            /^## 作業ログ/ {
-                print
-                getline
-                print log
-                print
-                next
-            }
-            { print }
-        ' "$DASHBOARD" > "$TEMP_FILE"
+        # 作業ログセクションの末尾に追記
+        echo "- $TIMESTAMP $LOG_MESSAGE" >> "$DASHBOARD"
         
         # 最終更新も更新
         if [[ "$OSTYPE" == "darwin"* ]]; then
-            sed -i '' "s/^最終更新: .*/最終更新: $TIMESTAMP/" "$TEMP_FILE"
+            sed -i '' "s/^最終更新: .*/最終更新: $TIMESTAMP/" "$DASHBOARD"
         else
-            sed -i "s/^最終更新: .*/最終更新: $TIMESTAMP/" "$TEMP_FILE"
+            sed -i "s/^最終更新: .*/最終更新: $TIMESTAMP/" "$DASHBOARD"
         fi
         
-        mv "$TEMP_FILE" "$DASHBOARD"
         echo "作業ログ追記完了: $LOG_MESSAGE"
     else
         echo "エラー: dashboard.md が見つかりません"

@@ -132,22 +132,27 @@ sleep 0.3
 
 # Foreman (ペイン1)
 tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.1" "$AGENT_CMD"
+sleep 0.2
 tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.1" Enter
+sleep 0.2
 
 # Miller (ペイン2)
-sleep 0.2
 tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.2" "$AGENT_CMD"
+sleep 0.2
 tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.2" Enter
+sleep 0.2
 
 # Gleaner (ペイン3)
-sleep 0.2
 tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.3" "$AGENT_CMD"
+sleep 0.2
 tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.3" Enter
+sleep 0.2
 
 # Sifter (ペイン4)
-sleep 0.2
 tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.4" "$AGENT_CMD"
+sleep 0.2
 tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.4" Enter
+sleep 0.2
 
 # Foremanペインを選択
 tmux select-pane -t "$SESSION_NAME:$WINDOW_NAME.1"

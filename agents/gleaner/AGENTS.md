@@ -170,6 +170,7 @@ last_updated: "YYYY-MM-DD HH:MM:SS"
 
 ```bash
 tmux send-keys -t windmill:windmill.1 "メッセージ"
+sleep 0.2
 tmux send-keys -t windmill:windmill.1 Enter
 ```
 
@@ -189,6 +190,7 @@ tmux send-keys -t windmill:windmill.1 Enter
 例：
 ```bash
 tmux send-keys -t windmill:windmill.1 "[GLEANER:DONE] ライブラリ調査完了、推奨: lodash"
+sleep 0.2
 tmux send-keys -t windmill:windmill.1 Enter
 ```
 
