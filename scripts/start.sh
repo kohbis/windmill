@@ -52,6 +52,18 @@ for agent in foreman miller sifter gleaner; do
     fi
 done
 
+# ダッシュボードをテンプレートから初期化
+if [ -f "$MILL_ROOT/dashboard.md.template" ]; then
+    cp "$MILL_ROOT/dashboard.md.template" "$MILL_ROOT/dashboard.md"
+    # 最終更新とセットアップ完了のタイムスタンプを設定
+    TIMESTAMP=$(date '+%Y-%m-%d %H:%M')
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        sed -i '' "s/YYYY-MM-DD HH:MM/$TIMESTAMP/g" "$MILL_ROOT/dashboard.md"
+    else
+        sed -i "s/YYYY-MM-DD HH:MM/$TIMESTAMP/g" "$MILL_ROOT/dashboard.md"
+    fi
+fi
+
 # tmuxセッション作成
 tmux new-session -d -s "$SESSION_NAME" -n "$WINDOW_NAME" -x 200 -y 50
 
