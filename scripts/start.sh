@@ -21,7 +21,7 @@ case "$AGENT_TYPE" in
         AGENT_NAME="OpenAI Codex CLI"
         ;;
     copilot|g)
-        AGENT_CMD="copilot --allow-all-tools"
+        AGENT_CMD="copilot --allow-all"
         AGENT_NAME="GitHub Copilot CLI"
         ;;
     *)

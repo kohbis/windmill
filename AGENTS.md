@@ -175,13 +175,13 @@ tmux send-keys -t windmill:windmill.4 'codex --full-auto' Enter
 #### GitHub Copilot CLI の場合
 ```bash
 # Miller（挽き手）
-tmux send-keys -t windmill:windmill.2 'copilot --allow-all-tools' Enter
+tmux send-keys -t windmill:windmill.2 'copilot --allow-all' Enter
 
 # Gleaner（聞き役）
-tmux send-keys -t windmill:windmill.3 'copilot --allow-all-tools' Enter
+tmux send-keys -t windmill:windmill.3 'copilot --allow-all' Enter
 
 # Sifter（目利き）
-tmux send-keys -t windmill:windmill.4 'copilot --allow-all-tools' Enter
+tmux send-keys -t windmill:windmill.4 'copilot --allow-all' Enter
 ```
 
 各職人は専用ディレクトリのAGENTS.mdを自動で読み込みます。
@@ -389,7 +389,7 @@ codex --full-auto
 copilot
 
 # 自動実行モード（承認なしで実行）
-copilot --allow-all-tools
+copilot --allow-all
 ```
 
 緊急停止: `Ctrl+C` または `./scripts/stop.sh`
