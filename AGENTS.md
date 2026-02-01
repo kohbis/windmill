@@ -2,7 +2,11 @@
 
 ## 概要
 
-Windmill（風車小屋）は、複数のClaude Codeエージェントが協調して作業するマルチエージェント開発環境です。
+Windmill（風車小屋）は、複数のAIコーディングエージェントが協調して作業するマルチエージェント開発環境です。
+
+**対応AIエージェント:**
+- Claude Code (Anthropic) - `CLAUDE.md` / `AGENTS.md`
+- OpenAI Codex CLI - `AGENTS.md`
 
 **メタファー**:
 - 入力（穀物）: 旦那からの持ち込み・仕事
@@ -144,6 +148,8 @@ start.shを実行すると:
 ```
 
 ### 職人起動（必要時）
+
+#### Claude Code の場合
 ```bash
 # Miller（挽き手）
 tmux send-keys -t windmill:windmill.2 'claude --dangerously-skip-permissions' Enter
@@ -155,7 +161,19 @@ tmux send-keys -t windmill:windmill.3 'claude --dangerously-skip-permissions' En
 tmux send-keys -t windmill:windmill.4 'claude --dangerously-skip-permissions' Enter
 ```
 
-各職人は専用ディレクトリのCLAUDE.mdを自動で読み込みます。
+#### OpenAI Codex CLI の場合
+```bash
+# Miller（挽き手）
+tmux send-keys -t windmill:windmill.2 'codex --full-auto' Enter
+
+# Gleaner（聞き役）
+tmux send-keys -t windmill:windmill.3 'codex --full-auto' Enter
+
+# Sifter（目利き）
+tmux send-keys -t windmill:windmill.4 'codex --full-auto' Enter
+```
+
+各職人は専用ディレクトリのAGENTS.mdを自動で読み込みます。
 
 ### 状況確認
 ```bash
@@ -334,14 +352,24 @@ result:
 
 ## 自動実行モード
 
-職人は `--dangerously-skip-permissions` で起動し、毎回の承認を不要にします。
+職人は自動実行モードで起動し、毎回の承認を不要にします。
 
+### Claude Code
 ```bash
 # 通常（毎回承認が必要）
 claude
 
 # 自動実行モード（承認なしで実行）
 claude --dangerously-skip-permissions
+```
+
+### OpenAI Codex CLI
+```bash
+# 通常（提案モード）
+codex
+
+# 自動実行モード（承認なしで実行）
+codex --full-auto
 ```
 
 緊急停止: `Ctrl+C` または `./scripts/stop.sh`

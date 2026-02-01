@@ -1,10 +1,14 @@
 # Windmill 🌀
 
-風車小屋 - Claude Code マルチエージェント開発環境
+風車小屋 - マルチAIエージェント開発環境
 
 ## 概要
 
-複数のClaude Codeエージェントが協調して作業するマルチエージェントフレームワークです。
+複数のAIコーディングエージェントが協調して作業するマルチエージェントフレームワークです。
+
+**対応エージェント:**
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) (Anthropic)
+- [OpenAI Codex CLI](https://github.com/openai/codex) (OpenAI)
 
 **メタファー:**
 - 入力（穀物）: 旦那からの持ち込み・仕事
@@ -80,3 +84,12 @@ windmill/
 ## 詳細
 
 詳しい仕様は [AGENTS.md](AGENTS.md) を参照してください。
+
+## エージェント対応
+
+本フレームワークは `AGENTS.md` を使用しており、Claude Code と OpenAI Codex の両方で動作します。
+
+| ファイル | 用途 |
+|----------|------|
+| `AGENTS.md` | エージェント共通の指示（両AI対応） |
+| `CLAUDE.md` | Claude Code専用（AGENTS.mdを参照） |

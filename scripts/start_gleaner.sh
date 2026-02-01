@@ -7,6 +7,15 @@ MILL_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SESSION_NAME="windmill"
 WINDOW_NAME="windmill"
 
+# デフォルトエージェント: claude
+AGENT_TYPE="${1:-claude}"
+
+case "$AGENT_TYPE" in
+    claude|c) AGENT_CMD="claude --dangerously-skip-permissions" ;;
+    codex|x) AGENT_CMD="codex --full-auto" ;;
+    *) echo "不明なエージェント: $AGENT_TYPE"; exit 1 ;;
+esac
+
 if ! tmux has-session -t "$SESSION_NAME" 2>/dev/null; then
     echo "セッション '$SESSION_NAME' が存在しません"
     echo "   先に ./scripts/start.sh を実行してください"
@@ -27,8 +36,8 @@ fi
 sed -i '' 's/^status: .*/status: idle/' "$MILL_ROOT/state/gleaner.yaml" 2>/dev/null || \
 sed -i 's/^status: .*/status: idle/' "$MILL_ROOT/state/gleaner.yaml"
 
-# Claude自動起動（権限スキップモード）
-tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.3" "claude --dangerously-skip-permissions"
+# Claude/Codex自動起動
+tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.3" "$AGENT_CMD"
 tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.3" Enter
 
 echo "Gleaner起動完了 (ペイン3)"

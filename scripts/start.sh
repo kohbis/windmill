@@ -7,6 +7,29 @@ MILL_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SESSION_NAME="windmill"
 WINDOW_NAME="windmill"
 
+# デフォルトエージェント: claude
+AGENT_TYPE="${1:-claude}"
+
+# エージェントコマンドの設定
+case "$AGENT_TYPE" in
+    claude|c)
+        AGENT_CMD="claude --dangerously-skip-permissions"
+        AGENT_NAME="Claude Code"
+        ;;
+    codex|x)
+        AGENT_CMD="codex --full-auto"
+        AGENT_NAME="OpenAI Codex CLI"
+        ;;
+    *)
+        echo "不明なエージェント: $AGENT_TYPE"
+        echo "使用法: $0 [claude|codex]"
+        exit 1
+        ;;
+esac
+
+echo "エージェント: $AGENT_NAME"
+echo ""
+
 # 既存セッションチェック
 if tmux has-session -t "$SESSION_NAME" 2>/dev/null; then
     echo "  セッション '$SESSION_NAME' は既に存在します"
@@ -103,12 +126,14 @@ tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.0" "watch -n 5 ./scripts/status.sh
 # Foremanペインを選択
 tmux select-pane -t "$SESSION_NAME:$WINDOW_NAME.1"
 
-# Foremanを自動起動（権限スキップで自動実行モード）
+# Foremanを自動起動
 sleep 0.3
-tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.1" "claude --dangerously-skip-permissions"
+tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.1" "$AGENT_CMD"
 tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.1" Enter
 
 echo "tmuxセッション '$SESSION_NAME' を作成しました"
+echo ""
+echo "エージェント: $AGENT_NAME"
 echo ""
 echo "レイアウト:"
 echo "   ┌─────────────┬─────────────┬─────────────┐"
@@ -120,9 +145,9 @@ echo ""
 echo "接続: tmux attach -t $SESSION_NAME"
 echo ""
 echo "各職人の起動方法:"
-echo "   Miller:  tmux send-keys -t $SESSION_NAME:$WINDOW_NAME.2 'claude --dangerously-skip-permissions' Enter"
-echo "   Gleaner: tmux send-keys -t $SESSION_NAME:$WINDOW_NAME.3 'claude --dangerously-skip-permissions' Enter"
-echo "   Sifter:  tmux send-keys -t $SESSION_NAME:$WINDOW_NAME.4 'claude --dangerously-skip-permissions' Enter"
+echo "   Miller:  tmux send-keys -t $SESSION_NAME:$WINDOW_NAME.2 '$AGENT_CMD' Enter"
+echo "   Gleaner: tmux send-keys -t $SESSION_NAME:$WINDOW_NAME.3 '$AGENT_CMD' Enter"
+echo "   Sifter:  tmux send-keys -t $SESSION_NAME:$WINDOW_NAME.4 '$AGENT_CMD' Enter"
 echo ""
-echo "権限スキップモードで実行中（自動実行）"
+echo "自動実行モードで起動中"
 echo "   緊急停止: Ctrl+C または ./scripts/stop.sh"
