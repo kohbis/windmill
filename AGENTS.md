@@ -19,7 +19,7 @@ Windmill（風車小屋）は、複数のAIコーディングエージェント�
 | 親方 | Foreman | 仕事の分解、進捗監視、旦那との対話<br>**実装作業は一切行わない** | 常時 |
 | 挽き手 | Miller | メインのコーディング・実装作業<br>**親方からの指示でのみ動く** | 常時 |
 | 目利き | Sifter | コードレビュー、品質チェック | オンデマンド |
-| 聞き役 | Gleaner | 調査、情報収集 | オンデマンド |
+| 聞き役 | Gleaner | **実装計画策定（親方と協働）**、調査、情報収集 | 常時 |
 
 ### 役割分担の原則
 
@@ -28,14 +28,16 @@ Windmill（風車小屋）は、複数のAIコーディングエージェント�
 | **Foreman（親方）** | ・仕事管理<br>・進捗監視<br>・職人起動<br>・旦那対話 | ・実装作業<br>・調査作業<br>・レビュー作業 |
 | **Miller（挽き手）** | ・コーディング<br>・テスト実行<br>・実装作業 | ・仕事管理<br>・調査作業<br>・レビュー作業<br>・Gleaner/Sifter起動 |
 | **Sifter（目利き）** | ・コードレビュー<br>・品質チェック | ・実装作業<br>・調査作業<br>・仕事管理 |
-| **Gleaner（聞き役）** | ・技術調査<br>・情報収集 | ・実装作業<br>・レビュー作業<br>・仕事管理 |
+| **Gleaner（聞き役）** | ・**実装計画策定**<br>・技術調査<br>・情報収集 | ・実装作業<br>・レビュー作業<br>・仕事管理 |
 
 ### 重要な制約
 
-1. **Gleaner/Sifterの起動はForemanのみが行う**
-2. **各職人は自分の専門領域のみ担当し、他の領域には介入しない**
-3. **Millerが調査/レビューが必要と判断したら、Foremanに報告して判断を仰ぐ**
-4. **すべての報告はForemanを経由する**（職人間の直接通信禁止）
+1. **実装前に必ずGleanerと計画策定を行う**（Foreman⇔Gleaner）
+2. **計画は旦那の許可が出てからMillerに指示**
+3. **Gleaner/Sifterの起動はForemanのみが行う**
+4. **各職人は自分の専門領域のみ担当し、他の領域には介入しない**
+5. **Millerが調査/レビューが必要と判断したら、Foremanに報告して判断を仰ぐ**
+6. **すべての報告はForemanを経由する**（職人間の直接通信禁止）
 
 ## ディレクトリ構造
 
@@ -71,7 +73,8 @@ grist/
 
 | スクリプト | 使用者 | 用途 |
 |-----------|--------|------|
-| `create_task.sh` | Foreman | 仕事YAML作成 |
+| `create_task.sh` | Foreman | 仕事YAML作成（status: planning） |
+| `update_plan.sh` | Foreman | 実装計画追記・旦那許可記録 |
 | `move_task.sh` | Foreman | 仕事ステータス遷移（pending→in_progress→completed/failed） |
 | `send_to.sh` | 全職人 | 職人への指示送信（tmux send-keysのラッパー） |
 | `update_state.sh` | 全職人 | 職人状態ファイル（state/*.yaml）の更新 |
@@ -82,8 +85,14 @@ grist/
 ### 使用例
 
 ```bash
-# 仕事YAML作成
+# 仕事YAML作成（status: planning で作成）
 ./scripts/agent/create_task.sh "認証機能の実装" "ステップ1" "ステップ2"
+
+# Gleanerとの計画策定後、計画を追記
+./scripts/agent/update_plan.sh task_20260130_auth "React" "標準的で実績あり" "medium" "コンポーネント作成" "テスト追加"
+
+# 旦那の許可が出たら（status: pending に変更）
+./scripts/agent/update_plan.sh --approve task_20260130_auth
 
 # 仕事をMillerに割り当て
 ./scripts/agent/move_task.sh task_20260130_auth in_progress miller
@@ -233,12 +242,32 @@ tmux send-keys -t windmill:windmill.1 Enter
 # 例: task_20260130_auth_feature.yaml
 id: task_YYYYMMDD_summary
 title: "仕事の説明"
-status: pending  # pending, in_progress, review, completed, failed
+status: planning  # planning, pending, in_progress, review, completed, failed
 assigned_to: null  # miller, sifter, gleaner
 patron_input_required: false
 breakdown:
   - "ステップ1"
   - "ステップ2"
+
+# --- 実装計画（Gleaner との計画策定後に追記） ---
+plan:
+  tech_selection: "使用するライブラリ/フレームワーク"
+  tech_reason: |
+    選定理由
+  architecture: |
+    ファイル構成やモジュール分割の説明
+  implementation_steps:
+    - "詳細ステップ1"
+    - "詳細ステップ2"
+  risks:
+    - "懸念点1"
+    - "懸念点2"
+  estimated_size: medium  # small, medium, large
+  planned_by: gleaner
+  planned_at: "YYYY-MM-DD HH:MM:SS"
+  patron_approved: false  # 旦那許可後に true
+  approved_at: null       # 許可日時
+
 work_log:
   - timestamp: "2025-01-29 10:00:00"
     action: "作業内容"
@@ -263,6 +292,17 @@ result:
     補足事項、注意点、今後の課題など。
 ```
 
+### ステータスの意味
+
+| status | 意味 | 次のアクション |
+|--------|------|---------------|
+| `planning` | 計画策定中 | Gleanerと計画を練る |
+| `pending` | 計画確定・旦那許可済み | Millerに割り当て可能 |
+| `in_progress` | 実装中 | Millerが作業中 |
+| `review` | レビュー中 | Sifterがレビュー中 |
+| `completed` | 完了 | 挽き上がり |
+| `failed` | 中断/保留 | 問題あり |
+
 ## 仕事移動権限（重要）
 
 **仕事ファイルの移動は Foremanのみが行う。他の職人は移動しない。**
@@ -272,17 +312,23 @@ result:
 ```
 1. 旦那 → Foreman: 仕事の持ち込み
    ↓
-2. Foreman: tasks/pending/ に仕事作成
+2. Foreman: tasks/pending/ に仕事作成（status: planning）
    ↓
-3. Foreman: pending/ → in_progress/ に移動（Millerに割り当て時）
+3. Foreman ⇔ Gleaner: 実装計画の策定【必須】
    ↓
-4. Miller: 作業実行、挽き上がり報告
+4. Foreman → 旦那: 計画を報告し、許可を求める【必須】
    ↓
-5. Foreman: 旦那に確認を求める
+5. 旦那: 許可 or 差し戻し or 調整
    ↓
-6. 旦那: 受け取り or やり直し or 継続 を判断
+6. Foreman: 許可が出たら pending/ → in_progress/ に移動（Millerに割り当て）
    ↓
-7. Foreman: 旦那の判断に従って移動
+7. Miller: 作業実行、挽き上がり報告
+   ↓
+8. Foreman: 旦那に確認を求める
+   ↓
+9. 旦那: 受け取り or やり直し or 継続 を判断
+   ↓
+10. Foreman: 旦那の判断に従って移動
    - 受け取り → in_progress/ → completed/
    - 中断 → in_progress/ → failed/
    - 継続 → in_progress/ のまま（追加指示）
@@ -341,16 +387,16 @@ result:
 
 ### 使用フロー例
 
-**事前調査パターン:**
+**標準パターン（計画策定→旦那許可→実装）:**
 ```
-旦那 → Foreman → Gleaner → Foreman → Miller → Foreman → 旦那
-         (調査)    (結果)    (実装指示)  (挽き上がり) (受け取り)
+旦那 → Foreman → Gleaner → Foreman → 旦那 → Foreman → Miller → Foreman → 旦那
+         (計画持込)  (計画案)   (計画報告) (許可)  (実装指示) (挽き上がり) (受け取り)
 ```
 
 **事後レビューパターン:**
 ```
-旦那 → Foreman → Miller → Foreman → Sifter → Foreman → 旦那
-         (実装指示) (挽き上がり) (レビュー) (結果)   (受け取り)
+旦那 → Foreman → Gleaner → Foreman → 旦那 → Foreman → Miller → Foreman → Sifter → Foreman → 旦那
+         (計画持込)  (計画案)   (計画報告) (許可)  (実装指示) (挽き上がり) (レビュー) (結果)   (受け取り)
 ```
 
 ## ステータスマーカー
@@ -365,6 +411,7 @@ result:
 | Sifter | `[SIFTER:APPROVE]` | レビュー良し |
 | Sifter | `[SIFTER:REQUEST_CHANGES]` | 直しあり |
 | Sifter | `[SIFTER:COMMENT]` | 一言 |
+| Gleaner | `[GLEANER:PLAN_READY]` | 実装計画策定完了 |
 | Gleaner | `[GLEANER:DONE]` | 調査完了 |
 | Gleaner | `[GLEANER:NEED_MORE_INFO]` | もう少し情報が必要 |
 

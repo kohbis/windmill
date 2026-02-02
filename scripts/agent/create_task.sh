@@ -9,6 +9,7 @@
 set -e
 
 MILL_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+TEMPLATE_FILE="$MILL_ROOT/tasks/task.yaml.template"
 
 # ヘルプ表示
 show_help() {
@@ -16,16 +17,23 @@ show_help() {
 使用方法: create_task.sh [オプション] "<タイトル>" "<ステップ1>" [<ステップ2>...]
 
 仕事YAMLを tasks/pending/ に作成します。
+テンプレート: tasks/task.yaml.template を使用
 
 オプション:
   --id <id>       カスタムIDを指定（デフォルト: task_YYYYMMDD_<slug>）
   --context <text> コンテキスト情報を追加
+  --status <status> 初期ステータス（デフォルト: planning）
   -h, --help      このヘルプを表示
+
+ステータス:
+  planning    - 計画策定中（Gleaner との計画策定待ち）
+  pending     - 計画確定、実装待ち（旦那許可済み）
 
 例:
   create_task.sh "認証機能の実装" "ログイン画面作成" "API連携" "テスト追加"
   create_task.sh --id task_20260130_auth "認証機能" "ステップ1"
   create_task.sh --context "前回の続き" "バグ修正" "原因調査" "修正実装"
+  create_task.sh --status pending "簡単な修正" "typo修正"
 EOF
     exit 0
 }
@@ -33,6 +41,7 @@ EOF
 # 引数解析
 CUSTOM_ID=""
 CONTEXT=""
+INITIAL_STATUS="planning"
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -42,6 +51,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --context)
             CONTEXT="$2"
+            shift 2
+            ;;
+        --status)
+            INITIAL_STATUS="$2"
             shift 2
             ;;
         -h|--help)
@@ -86,14 +99,21 @@ if [ -f "$TASK_FILE" ]; then
     exit 1
 fi
 
+# テンプレートチェック
+if [ ! -f "$TEMPLATE_FILE" ]; then
+    echo "エラー: テンプレートファイルが見つかりません: $TEMPLATE_FILE"
+    echo "setup.sh を実行してください"
+    exit 1
+fi
+
 # タイムスタンプ
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
 
-# YAML生成
+# テンプレートからYAML生成（コメント行を除く基本部分のみ）
 cat > "$TASK_FILE" << EOF
 id: $TASK_ID
 title: "$TITLE"
-status: pending
+status: $INITIAL_STATUS
 assigned_to: null
 patron_input_required: false
 breakdown:
@@ -106,9 +126,31 @@ for step in "${STEPS[@]}"; do
     ((STEP_NUM++))
 done
 
+# planセクション（コメントとして追加、後でGleanerとの計画策定時に有効化）
+cat >> "$TASK_FILE" << 'EOF'
+
+# --- 実装計画（Gleaner との計画策定後に追記） ---
+# plan:
+#   tech_selection: ""
+#   tech_reason: |
+#     
+#   architecture: |
+#     
+#   implementation_steps:
+#     - ""
+#   risks:
+#     - ""
+#   estimated_size: medium
+#   planned_by: gleaner
+#   planned_at: ""
+#   patron_approved: false
+#   approved_at: null
+EOF
+
 # コンテキスト追加（オプション）
 if [ -n "$CONTEXT" ]; then
     cat >> "$TASK_FILE" << EOF
+
 context: |
   $CONTEXT
 EOF
@@ -116,9 +158,16 @@ fi
 
 # work_logとcreated_at
 cat >> "$TASK_FILE" << EOF
+
 work_log: []
 created_at: "$TIMESTAMP"
 EOF
 
 echo "作成完了: $TASK_FILE"
 echo "ID: $TASK_ID"
+echo "ステータス: $INITIAL_STATUS"
+if [ "$INITIAL_STATUS" = "planning" ]; then
+    echo ""
+    echo "次のステップ: Gleaner に計画持ち込みを送信してください"
+    echo "  send_to.sh gleaner \"【計画持ち込み】${TASK_ID}: ...\""
+fi

@@ -1,0 +1,61 @@
+# Windmill 仕事テンプレート
+# ファイル名: task_YYYYMMDD_summary.yaml
+# 例: task_20260130_auth_feature.yaml
+
+id: TASK_ID_PLACEHOLDER
+title: "TITLE_PLACEHOLDER"
+status: planning  # planning, pending, in_progress, review, completed, failed
+assigned_to: null  # miller, sifter, gleaner
+patron_input_required: false
+
+# --- 作業ステップ（Foreman が作成時に記入） ---
+breakdown:
+  - step1: "STEP_PLACEHOLDER"
+
+# --- 実装計画（Gleaner との計画策定後に追記） ---
+# plan:
+#   tech_selection: "使用するライブラリ/フレームワーク"
+#   tech_reason: |
+#     選定理由を記載
+#   architecture: |
+#     ファイル構成やモジュール分割の説明
+#   implementation_steps:
+#     - "詳細ステップ1"
+#     - "詳細ステップ2"
+#   risks:
+#     - "懸念点1"
+#     - "懸念点2"
+#   estimated_size: small  # small, medium, large
+#   planned_by: gleaner
+#   planned_at: "YYYY-MM-DD HH:MM:SS"
+#   patron_approved: false
+#   approved_at: null
+
+# --- コンテキスト情報（オプション） ---
+# context: |
+#   背景情報や前提条件など
+
+# --- 作業ログ ---
+work_log: []
+
+created_at: "CREATED_AT_PLACEHOLDER"
+
+# =============================================================================
+# 以下は完了時にレポートとして追加
+# =============================================================================
+# completed_at: "YYYY-MM-DD HH:MM:SS"
+# completed_by: miller
+# result:
+#   summary: |
+#     作業の概要を簡潔に記載。
+#     何を実装/修正したか。
+#   changes:
+#     - file: path/to/file1
+#       description: "変更内容の説明"
+#     - file: path/to/file2
+#       description: "変更内容の説明"
+#   tests:
+#     status: passed  # passed, failed, skipped
+#     details: "テスト結果の詳細（件数等）"
+#   notes: |
+#     補足事項、注意点、今後の課題など。
