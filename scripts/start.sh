@@ -7,31 +7,130 @@ MILL_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SESSION_NAME="windmill"
 WINDOW_NAME="windmill"
 
+# ヘルプメッセージ
+show_help() {
+    cat << EOF
+使用法: $0 [DEFAULT_AGENT] [OPTIONS]
+
+DEFAULT_AGENT: 全エージェントのデフォルト (claude|codex|copilot)
+               デフォルト: claude
+
+OPTIONS:
+  --foreman AGENT   Foremanのエージェントを指定
+  --miller AGENT    Millerのエージェントを指定
+  --gleaner AGENT   Gleanerのエージェントを指定
+  --sifter AGENT    Sifterのエージェントを指定
+  -h, --help        このヘルプを表示
+
+AGENT: claude|codex|copilot (短縮形: c|x|g)
+
+例:
+  $0                              # 全てclaude
+  $0 codex                        # 全てcodex
+  $0 --gleaner codex              # gleanerのみcodex、他はclaude
+  $0 claude --miller copilot      # millerのみcopilot、他はclaude
+  $0 codex --gleaner claude --sifter claude  # gleanerとsifterはclaude、他はcodex
+EOF
+    exit 0
+}
+
+# エージェントコマンドを取得する関数
+get_agent_cmd() {
+    local agent_type="$1"
+    case "$agent_type" in
+        claude|c)
+            echo "claude --dangerously-skip-permissions"
+            ;;
+        codex|x)
+            echo "codex --full-auto"
+            ;;
+        copilot|g)
+            echo "copilot --allow-all"
+            ;;
+        *)
+            echo "不明なエージェント: $agent_type" >&2
+            exit 1
+            ;;
+    esac
+}
+
+# エージェント名を取得する関数
+get_agent_name() {
+    local agent_type="$1"
+    case "$agent_type" in
+        claude|c) echo "Claude Code" ;;
+        codex|x) echo "OpenAI Codex CLI" ;;
+        copilot|g) echo "GitHub Copilot CLI" ;;
+        *) echo "Unknown" ;;
+    esac
+}
+
 # デフォルトエージェント: claude
-AGENT_TYPE="${1:-claude}"
+DEFAULT_AGENT="claude"
 
-# エージェントコマンドの設定
-case "$AGENT_TYPE" in
-    claude|c)
-        AGENT_CMD="claude --dangerously-skip-permissions"
-        AGENT_NAME="Claude Code"
-        ;;
-    codex|x)
-        AGENT_CMD="codex --full-auto"
-        AGENT_NAME="OpenAI Codex CLI"
-        ;;
-    copilot|g)
-        AGENT_CMD="copilot --allow-all"
-        AGENT_NAME="GitHub Copilot CLI"
-        ;;
-    *)
-        echo "不明なエージェント: $AGENT_TYPE"
-        echo "使用法: $0 [claude|codex|copilot]"
-        exit 1
-        ;;
-esac
+# 個別エージェント設定（デフォルトは未設定）
+FOREMAN_AGENT=""
+MILLER_AGENT=""
+GLEANER_AGENT=""
+SIFTER_AGENT=""
 
-echo "エージェント: $AGENT_NAME"
+# コマンドライン引数をパース
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -h|--help)
+            show_help
+            ;;
+        --foreman)
+            FOREMAN_AGENT="$2"
+            shift 2
+            ;;
+        --miller)
+            MILLER_AGENT="$2"
+            shift 2
+            ;;
+        --gleaner)
+            GLEANER_AGENT="$2"
+            shift 2
+            ;;
+        --sifter)
+            SIFTER_AGENT="$2"
+            shift 2
+            ;;
+        --*)
+            echo "不明なオプション: $1"
+            echo "ヘルプ: $0 --help"
+            exit 1
+            ;;
+        *)
+            # 最初の位置引数をデフォルトエージェントとして扱う
+            if [[ -z "$DEFAULT_AGENT" || "$DEFAULT_AGENT" == "claude" ]]; then
+                DEFAULT_AGENT="$1"
+            else
+                echo "複数のデフォルトエージェントが指定されています: $DEFAULT_AGENT と $1"
+                exit 1
+            fi
+            shift
+            ;;
+    esac
+done
+
+# 個別指定がなければデフォルトを使用
+FOREMAN_AGENT="${FOREMAN_AGENT:-$DEFAULT_AGENT}"
+MILLER_AGENT="${MILLER_AGENT:-$DEFAULT_AGENT}"
+GLEANER_AGENT="${GLEANER_AGENT:-$DEFAULT_AGENT}"
+SIFTER_AGENT="${SIFTER_AGENT:-$DEFAULT_AGENT}"
+
+# 各エージェントのコマンドを取得
+FOREMAN_CMD=$(get_agent_cmd "$FOREMAN_AGENT")
+MILLER_CMD=$(get_agent_cmd "$MILLER_AGENT")
+GLEANER_CMD=$(get_agent_cmd "$GLEANER_AGENT")
+SIFTER_CMD=$(get_agent_cmd "$SIFTER_AGENT")
+
+echo "エージェント設定:"
+echo "  Foreman: $(get_agent_name "$FOREMAN_AGENT")"
+echo "  Miller:  $(get_agent_name "$MILLER_AGENT")"
+echo "  Gleaner: $(get_agent_name "$GLEANER_AGENT")"
+echo "  Sifter:  $(get_agent_name "$SIFTER_AGENT")"
 echo ""
 
 # 既存セッションチェック
@@ -120,25 +219,25 @@ tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.0" "watch -n 5 ./scripts/status.sh
 sleep 0.3
 
 # Foreman (ペイン1)
-tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.1" "$AGENT_CMD"
+tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.1" "$FOREMAN_CMD"
 sleep 0.2
 tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.1" Enter
 sleep 0.2
 
 # Miller (ペイン2)
-tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.2" "$AGENT_CMD"
+tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.2" "$MILLER_CMD"
 sleep 0.2
 tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.2" Enter
 sleep 0.2
 
 # Gleaner (ペイン3)
-tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.3" "$AGENT_CMD"
+tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.3" "$GLEANER_CMD"
 sleep 0.2
 tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.3" Enter
 sleep 0.2
 
 # Sifter (ペイン4)
-tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.4" "$AGENT_CMD"
+tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.4" "$SIFTER_CMD"
 sleep 0.2
 tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.4" Enter
 sleep 0.2
@@ -148,7 +247,11 @@ tmux select-pane -t "$SESSION_NAME:$WINDOW_NAME.1"
 
 echo "tmuxセッション '$SESSION_NAME' を作成しました"
 echo ""
-echo "エージェント: $AGENT_NAME"
+echo "エージェント構成:"
+echo "  [1] Foreman: $(get_agent_name "$FOREMAN_AGENT")"
+echo "  [2] Miller:  $(get_agent_name "$MILLER_AGENT")"
+echo "  [3] Gleaner: $(get_agent_name "$GLEANER_AGENT")"
+echo "  [4] Sifter:  $(get_agent_name "$SIFTER_AGENT")"
 echo ""
 echo "レイアウト:"
 echo "   ┌─────────────┬─────────────┬─────────────┐"
