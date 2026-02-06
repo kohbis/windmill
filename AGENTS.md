@@ -1,462 +1,464 @@
-# Windmill - 風車小屋マルチエージェント環境
+# Windmill - Multi-Agent Development Environment
 
-## 概要
+## Overview
 
-Windmill（風車小屋）は、複数のAIコーディングエージェントが協調して作業するマルチエージェント開発環境です。
+Windmill is a multi-agent development environment where multiple AI coding agents collaborate on tasks.
 
-**対応AIエージェント:**
+**Supported AI Agents:**
 - Claude Code (Anthropic) - `CLAUDE.md` / `AGENTS.md`
-- OpenAI Codex CLI - `AGENTS.md`- GitHub Copilot CLI - `AGENTS.md` / `.github/copilot-instructions.md`
-**メタファー**:
-- 入力（穀物）: 旦那からの持ち込み・仕事
-- 処理（製粉）: 職人たちによる開発作業
-- 出力（粉）: 挽き上がったコード・成果物
+- OpenAI Codex CLI - `AGENTS.md`
+- GitHub Copilot CLI - `AGENTS.md` / `.github/copilot-instructions.md`
 
-## 職人構成
+**Metaphor**:
+- Input (grain): Tasks brought in by the patron
+- Processing (milling): Development work by the craftsmen
+- Output (flour): Completed code and deliverables
 
-| 役割 | 英名 | 責務 | 稼働 |
-|------|------|------|------|
-| 親方 | Foreman | 仕事の分解、進捗監視、旦那との対話<br>**実装作業は一切行わない** | 常時 |
-| 挽き手 | Miller | メインのコーディング・実装作業<br>**親方からの指示でのみ動く** | 常時 |
-| 目利き | Sifter | コードレビュー、品質チェック | オンデマンド |
-| 聞き役 | Gleaner | **実装計画策定（親方と協働）**、調査、情報収集 | 常時 |
+## Agent Structure
 
-### 役割分担の原則
+| Role | Name | Responsibility | Availability |
+|------|------|----------------|--------------|
+| Manager | Foreman | Task decomposition, progress monitoring, patron interaction<br>**Never performs implementation work** | Always |
+| Implementer | Miller | Main coding and implementation work<br>**Only acts on Foreman's instructions** | Always |
+| Reviewer | Sifter | Code review, quality check | On-demand |
+| Researcher | Gleaner | **Implementation planning (with Foreman)**, research, information gathering | Always |
 
-| 職人 | できること | 禁止事項 |
-|-------------|----------|----------|
-| **Foreman（親方）** | ・仕事管理<br>・進捗監視<br>・職人起動<br>・旦那対話 | ・実装作業<br>・調査作業<br>・レビュー作業 |
-| **Miller（挽き手）** | ・コーディング<br>・テスト実行<br>・実装作業 | ・仕事管理<br>・調査作業<br>・レビュー作業<br>・Gleaner/Sifter起動 |
-| **Sifter（目利き）** | ・コードレビュー<br>・品質チェック | ・実装作業<br>・調査作業<br>・仕事管理 |
-| **Gleaner（聞き役）** | ・**実装計画策定**<br>・技術調査<br>・情報収集 | ・実装作業<br>・レビュー作業<br>・仕事管理 |
+### Role Division Principles
 
-### 重要な制約
+| Agent | Can Do | Prohibited |
+|-------|--------|------------|
+| **Foreman (Manager)** | - Task management<br>- Progress monitoring<br>- Starting agents<br>- Patron interaction | - Implementation work<br>- Research work<br>- Review work |
+| **Miller (Implementer)** | - Coding<br>- Test execution<br>- Implementation work | - Task management<br>- Research work<br>- Review work<br>- Starting Gleaner/Sifter |
+| **Sifter (Reviewer)** | - Code review<br>- Quality check | - Implementation work<br>- Research work<br>- Task management |
+| **Gleaner (Researcher)** | - **Implementation planning**<br>- Technical research<br>- Information gathering | - Implementation work<br>- Review work<br>- Task management |
 
-1. **実装前に必ずGleanerと計画策定を行う**（Foreman⇔Gleaner）
-2. **計画は旦那の許可が出てからMillerに指示**
-3. **Gleaner/Sifterの起動はForemanのみが行う**
-4. **各職人は自分の専門領域のみ担当し、他の領域には介入しない**
-5. **Millerが調査/レビューが必要と判断したら、Foremanに報告して判断を仰ぐ**
-6. **すべての報告はForemanを経由する**（職人間の直接通信禁止）
+### Key Constraints
 
-## ディレクトリ構造
+1. **Always plan with Gleaner before implementation** (Foreman ⇔ Gleaner)
+2. **Only instruct Miller after patron approval of the plan**
+3. **Only Foreman can start Gleaner/Sifter**
+4. **Each agent handles only their specialty, no intervention in other areas**
+5. **If Miller determines research/review is needed, report to Foreman for decision**
+6. **All reports go through Foreman** (no direct communication between agents)
+
+## Directory Structure
 
 ```
 grist/
-├── tasks/                     # 仕事管理
-│   ├── pending/               # 待ち仕事
-│   ├── in_progress/           # 挽き中の仕事
-│   ├── completed/             # 挽き上がり（完了報告含む）
-│   └── failed/                # 中断/保留
-├── state/                     # 職人状態管理
+├── tasks/                     # Task management
+│   ├── pending/               # Pending tasks
+│   ├── in_progress/           # Tasks in progress
+│   ├── completed/             # Completed tasks (with completion reports)
+│   └── failed/                # Suspended/On hold
+├── state/                     # Agent state management
 │   ├── foreman.yaml
 │   ├── miller.yaml
 │   ├── sifter.yaml
 │   └── gleaner.yaml
-├── agents/                    # 職人専用ディレクトリ
-│   ├── foreman/CLAUDE.md      # 親方のプロンプト
-│   ├── miller/CLAUDE.md       # 挽き手のプロンプト
-│   ├── sifter/CLAUDE.md       # 目利きのプロンプト
-│   └── gleaner/CLAUDE.md      # 聞き役のプロンプト
-├── scripts/                   # 操作スクリプト
-├── dashboard.md               # 進捗管理（Foremanが更新）
+├── agents/                    # Agent-specific directories
+│   ├── foreman/CLAUDE.md      # Foreman's prompt
+│   ├── miller/CLAUDE.md       # Miller's prompt
+│   ├── sifter/CLAUDE.md       # Sifter's prompt
+│   └── gleaner/CLAUDE.md      # Gleaner's prompt
+├── scripts/                   # Operation scripts
+├── dashboard.md               # Progress management (updated by Foreman)
 
-└── feedback/                  # 旦那からの声
-    ├── inbox.md               # 未対応フィードバック
-    └── archive.md             # 対応済みフィードバック
+└── feedback/                  # Feedback from patron
+    ├── inbox.md               # Unprocessed feedback
+    └── archive.md             # Processed feedback
 ```
 
-## エージェント用スクリプト
+## Agent Scripts
 
-`scripts/agent/` にエージェント（職人）が使用するスクリプトを配置しています。
-これらはトークン効率化と再現性向上のために作成されました。
+Scripts for agents are placed in `scripts/agent/`.
+These were created for token efficiency and reproducibility.
 
-| スクリプト | 使用者 | 用途 |
-|-----------|--------|------|
-| `create_task.sh` | Foreman | 仕事YAML作成（status: planning） |
-| `update_plan.sh` | Foreman | 実装計画追記・旦那許可記録 |
-| `move_task.sh` | Foreman | 仕事ステータス遷移（pending→in_progress→completed/failed） |
-| `send_to.sh` | 全職人 | 職人への指示送信（tmux send-keysのラッパー） |
-| `update_state.sh` | 全職人 | 職人状態ファイル（state/*.yaml）の更新 |
-| `log_work.sh` | Foreman, Miller | 仕事YAMLのwork_log追記 |
-| `update_dashboard.sh` | Foreman | ダッシュボード自動更新・作業ログ追記 |
-| `complete_task.sh` | Foreman | 仕事完了レポート追記＋completedへ移動 |
+| Script | User | Purpose |
+|--------|------|---------|
+| `create_task.sh` | Foreman | Create task YAML (status: planning) |
+| `update_plan.sh` | Foreman | Add implementation plan, record patron approval |
+| `move_task.sh` | Foreman | Task status transition (pending→in_progress→completed/failed) |
+| `send_to.sh` | All agents | Send instructions to agents (tmux send-keys wrapper) |
+| `update_state.sh` | All agents | Update agent state files (state/*.yaml) |
+| `log_work.sh` | Foreman, Miller | Append to task YAML work_log |
+| `update_dashboard.sh` | Foreman | Auto-update dashboard, append work log |
+| `complete_task.sh` | Foreman | Append completion report + move to completed |
 
-### 使用例
+### Usage Examples
 
 ```bash
-# 仕事YAML作成（status: planning で作成）
-./scripts/agent/create_task.sh "認証機能の実装" "ステップ1" "ステップ2"
+# Create task YAML (created with status: planning)
+./scripts/agent/create_task.sh "Implement authentication" "Step 1" "Step 2"
 
-# Gleanerとの計画策定後、計画を追記
-./scripts/agent/update_plan.sh task_20260130_auth "React" "標準的で実績あり" "medium" "コンポーネント作成" "テスト追加"
+# After planning with Gleaner, add the plan
+./scripts/agent/update_plan.sh task_20260130_auth "React" "Standard and proven" "medium" "Create components" "Add tests"
 
-# 旦那の許可が出たら（status: pending に変更）
+# When patron approves (change status to pending)
 ./scripts/agent/update_plan.sh --approve task_20260130_auth
 
-# 仕事をMillerに割り当て
+# Assign task to Miller
 ./scripts/agent/move_task.sh task_20260130_auth in_progress miller
 
-# Millerに指示を送る
-./scripts/agent/send_to.sh miller "tasks/in_progress/task_20260130_auth.yaml を処理してください"
+# Send instructions to Miller
+./scripts/agent/send_to.sh miller "Process tasks/in_progress/task_20260130_auth.yaml"
 
-# 仕事を完了
+# Complete task
 ./scripts/agent/move_task.sh task_20260130_auth completed
 ```
 
 ```bash
-# 職人状態を更新（第4引数でprogressを指定可能）
-./scripts/agent/update_state.sh miller working task_20260130_auth "実装開始"
-./scripts/agent/update_state.sh miller blocked task_20260130_auth "外部API接続エラー"
-./scripts/agent/update_state.sh miller idle  # idle時はcurrent_taskとprogressは自動クリア
+# Update agent state (4th argument for progress)
+./scripts/agent/update_state.sh miller working task_20260130_auth "Started implementation"
+./scripts/agent/update_state.sh miller blocked task_20260130_auth "External API connection error"
+./scripts/agent/update_state.sh miller idle  # current_task and progress auto-cleared when idle
 
-# work_logに追記
-./scripts/agent/log_work.sh task_20260130_auth "実装開始"
-./scripts/agent/log_work.sh task_20260130_auth "挝き上がり" "全テストパス"
+# Append to work_log
+./scripts/agent/log_work.sh task_20260130_auth "Started implementation"
+./scripts/agent/log_work.sh task_20260130_auth "Completed" "All tests passed"
 ```
 
 ```bash
-# ダッシュボード更新
+# Update dashboard
 ./scripts/agent/update_dashboard.sh
-./scripts/agent/update_dashboard.sh --log "Millerに指示送信"
+./scripts/agent/update_dashboard.sh --log "Sent instructions to Miller"
 
-# 仕事完了（レポート追記＋completedへ移動）
-./scripts/agent/complete_task.sh task_20260130_auth "認証機能を実装" "passed"
-./scripts/agent/complete_task.sh task_20260130_auth "バグ修正" "passed" "追加の最適化推奨"
+# Complete task (append report + move to completed)
+./scripts/agent/complete_task.sh task_20260130_auth "Implemented authentication" "passed"
+./scripts/agent/complete_task.sh task_20260130_auth "Fixed bug" "passed" "Additional optimization recommended"
 ```
 
-各スクリプトの詳細は `-h` または `--help` オプションで確認できます。
+See each script's `-h` or `--help` option for details.
 
-## 使い方
+## Usage
 
-### 初期セットアップ
+### Initial Setup
 ```bash
 ./scripts/setup.sh
 ```
 
-### 起動（Foremanが自動起動）
+### Start (Foreman auto-starts)
 ```bash
 ./scripts/start.sh
 tmux attach -t windmill
 ```
 
-start.shを実行すると:
-1. tmuxセッションが作成される（6ペイン構成）
-2. Foreman（親方）が自動起動し、ヒアリングを開始する
-3. 他の職人は必要に応じて手動で起動
+When you run start.sh:
+1. A tmux session is created (6-pane layout)
+2. Foreman auto-starts and begins hearing
+3. Other agents are started manually as needed
 
-**レイアウト:**
+**Layout:**
 ```
 ┌─────────────────┬──────────────┬──────────────┐
 │                 │   Foreman    │   Miller     │
-│   Status        │   (ペイン1)  │   (ペイン2)  │
-│   (ペイン0)     ├──────────────┼──────────────┤
+│   Status        │   (Pane 1)   │   (Pane 2)   │
+│   (Pane 0)      ├──────────────┼──────────────┤
 │                 │   Sifter     │   Gleaner    │
-│                 │   (ペイン4)  │   (ペイン3)  │
+│                 │   (Pane 4)   │   (Pane 3)   │
 └─────────────────┴──────────────┴──────────────┘
 ```
 
-### 職人起動（必要時）
+### Starting Agents (When Needed)
 
-#### Claude Code の場合
+#### For Claude Code
 ```bash
-# Miller（挽き手）
+# Miller (Implementer)
 tmux send-keys -t windmill:windmill.2 'claude --dangerously-skip-permissions' Enter
 
-# Gleaner（聞き役）または ./scripts/start_gleaner.sh
+# Gleaner (Researcher) or ./scripts/start_gleaner.sh
 tmux send-keys -t windmill:windmill.3 'claude --dangerously-skip-permissions' Enter
 
-# Sifter（目利き）または ./scripts/start_sifter.sh
+# Sifter (Reviewer) or ./scripts/start_sifter.sh
 tmux send-keys -t windmill:windmill.4 'claude --dangerously-skip-permissions' Enter
 ```
 
-#### OpenAI Codex CLI の場合
+#### For OpenAI Codex CLI
 ```bash
-# Miller（挽き手）
+# Miller (Implementer)
 tmux send-keys -t windmill:windmill.2 'codex --full-auto' Enter
 
-# Gleaner（聞き役）
+# Gleaner (Researcher)
 tmux send-keys -t windmill:windmill.3 'codex --full-auto' Enter
 
-# Sifter（目利き）
+# Sifter (Reviewer)
 tmux send-keys -t windmill:windmill.4 'codex --full-auto' Enter
 ```
 
-#### GitHub Copilot CLI の場合
+#### For GitHub Copilot CLI
 ```bash
-# Miller（挽き手）
+# Miller (Implementer)
 tmux send-keys -t windmill:windmill.2 'copilot --allow-all' Enter
 
-# Gleaner（聞き役）
+# Gleaner (Researcher)
 tmux send-keys -t windmill:windmill.3 'copilot --allow-all' Enter
 
-# Sifter（目利き）
+# Sifter (Reviewer)
 tmux send-keys -t windmill:windmill.4 'copilot --allow-all' Enter
 ```
 
-各職人は専用ディレクトリのAGENTS.mdを自動で読み込みます。
+Each agent automatically reads the AGENTS.md from their dedicated directory.
 
-### 状況確認
+### Status Check
 ```bash
 ./scripts/status.sh
 ```
 
-### 停止
+### Stop
 ```bash
 ./scripts/stop.sh
 ```
 
-## 通信方式
+## Communication Method
 
-### tmux send-keys（重要）
+### tmux send-keys (Important)
 
-職人間の通信は `tmux send-keys` を使用。**必ずsleep 0.2秒を挟んで2分割で送る**：
+Inter-agent communication uses `tmux send-keys`. **Always split into 2 parts with 0.2 second sleep**:
 
 ```bash
-# OK: 動く
-tmux send-keys -t windmill:windmill.1 "メッセージ"
+# OK: Works
+tmux send-keys -t windmill:windmill.1 "Message"
 sleep 0.2
 tmux send-keys -t windmill:windmill.1 Enter
 
-# NG: 動かない
-tmux send-keys -t windmill:windmill.1 "メッセージ" Enter
+# NG: Does not work
+tmux send-keys -t windmill:windmill.1 "Message" Enter
 
-# NG: 動かない
-tmux send-keys -t windmill:windmill.1 "メッセージ"
+# NG: Does not work
+tmux send-keys -t windmill:windmill.1 "Message"
 # No sleep
 tmux send-keys -t windmill:windmill.1 Enter
 ```
 
-### ペイン番号
+### Pane Numbers
 
-- `windmill:windmill.0` - Status (監視パネル)
-- `windmill:windmill.1` - Foreman (親方)
-- `windmill:windmill.2` - Miller (挽き手)
-- `windmill:windmill.3` - Gleaner (聞き役)
-- `windmill:windmill.4` - Sifter (目利き)
+- `windmill:windmill.0` - Status (monitoring panel)
+- `windmill:windmill.1` - Foreman (Manager)
+- `windmill:windmill.2` - Miller (Implementer)
+- `windmill:windmill.3` - Gleaner (Researcher)
+- `windmill:windmill.4` - Sifter (Reviewer)
 
-## 仕事YAMLフォーマット
+## Task YAML Format
 
 ```yaml
-# ファイル名: task_YYYYMMDD_summary.yaml
-# 例: task_20260130_auth_feature.yaml
+# Filename: task_YYYYMMDD_summary.yaml
+# Example: task_20260130_auth_feature.yaml
 id: task_YYYYMMDD_summary
-title: "仕事の説明"
+title: "Task description"
 status: planning  # planning, pending, in_progress, review, completed, failed
 assigned_to: null  # miller, sifter, gleaner
 patron_input_required: false
 breakdown:
-  - "ステップ1"
-  - "ステップ2"
+  - "Step 1"
+  - "Step 2"
 
-# --- 実装計画（Gleaner との計画策定後に追記） ---
+# --- Implementation Plan (added after planning with Gleaner) ---
 plan:
-  tech_selection: "使用するライブラリ/フレームワーク"
+  tech_selection: "Library/framework to use"
   tech_reason: |
-    選定理由
+    Reason for selection
   architecture: |
-    ファイル構成やモジュール分割の説明
+    File structure and module division explanation
   implementation_steps:
-    - "詳細ステップ1"
-    - "詳細ステップ2"
+    - "Detailed step 1"
+    - "Detailed step 2"
   risks:
-    - "懸念点1"
-    - "懸念点2"
+    - "Concern 1"
+    - "Concern 2"
   estimated_size: medium  # small, medium, large
   planned_by: gleaner
   planned_at: "YYYY-MM-DD HH:MM:SS"
-  patron_approved: false  # 旦那許可後に true
-  approved_at: null       # 許可日時
+  patron_approved: false  # true after patron approval
+  approved_at: null       # Approval timestamp
 
 work_log:
   - timestamp: "2025-01-29 10:00:00"
-    action: "作業内容"
+    action: "Work content"
 created_at: "2025-01-29 09:00:00"
 
-# --- 以下は完了時にレポートとして追加 ---
+# --- Added as report upon completion ---
 completed_at: "2025-01-29 12:00:00"
 completed_by: miller
 result:
   summary: |
-    作業の概要を簡潔に記載。
-    何を実装/修正したか。
+    Brief summary of the work.
+    What was implemented/fixed.
   changes:
     - file: path/to/file1
-      description: "変更内容の説明"
+      description: "Description of changes"
     - file: path/to/file2
-      description: "変更内容の説明"
+      description: "Description of changes"
   tests:
     status: passed  # passed, failed, skipped
-    details: "テスト結果の詳細（件数等）"
+    details: "Test result details (count, etc.)"
   notes: |
-    補足事項、注意点、今後の課題など。
+    Supplementary notes, caveats, future tasks, etc.
 ```
 
-### ステータスの意味
+### Status Meanings
 
-| status | 意味 | 次のアクション |
-|--------|------|---------------|
-| `planning` | 計画策定中 | Gleanerと計画を練る |
-| `pending` | 計画確定・旦那許可済み | Millerに割り当て可能 |
-| `in_progress` | 実装中 | Millerが作業中 |
-| `review` | レビュー中 | Sifterがレビュー中 |
-| `completed` | 完了 | 挽き上がり |
-| `failed` | 中断/保留 | 問題あり |
+| status | Meaning | Next Action |
+|--------|---------|-------------|
+| `planning` | Planning in progress | Develop plan with Gleaner |
+| `pending` | Plan confirmed, patron approved | Can assign to Miller |
+| `in_progress` | Implementation in progress | Miller is working |
+| `review` | Under review | Sifter is reviewing |
+| `completed` | Completed | Finished |
+| `failed` | Suspended/On hold | Problem exists |
 
-## 仕事移動権限（重要）
+## Task Movement Permissions (Important)
 
-**仕事ファイルの移動は Foremanのみが行う。他の職人は移動しない。**
+**Only Foreman moves task files. Other agents do not move them.**
 
-### 仕事の状態遷移フロー
+### Task State Transition Flow
 
 ```
-1. 旦那 → Foreman: 仕事の持ち込み
+1. Patron → Foreman: Task brought in
    ↓
-2. Foreman: tasks/pending/ に仕事作成（status: planning）
+2. Foreman: Create task in tasks/pending/ (status: planning)
    ↓
-3. Foreman ⇔ Gleaner: 実装計画の策定【必須】
+3. Foreman ⇔ Gleaner: Develop implementation plan [Required]
    ↓
-4. Foreman → 旦那: 計画を報告し、許可を求める【必須】
+4. Foreman → Patron: Report plan and request approval [Required]
    ↓
-5. 旦那: 許可 or 差し戻し or 調整
+5. Patron: Approve or reject or adjust
    ↓
-6. Foreman: 許可が出たら pending/ → in_progress/ に移動（Millerに割り当て）
+6. Foreman: If approved, move pending/ → in_progress/ (assign to Miller)
    ↓
-7. Miller: 作業実行、挽き上がり報告
+7. Miller: Execute work, report completion
    ↓
-8. Foreman: 旦那に確認を求める
+8. Foreman: Request confirmation from patron
    ↓
-9. 旦那: 受け取り or やり直し or 継続 を判断
+9. Patron: Decide to accept or redo or continue
    ↓
-10. Foreman: 旦那の判断に従って移動
-   - 受け取り → in_progress/ → completed/
-   - 中断 → in_progress/ → failed/
-   - 継続 → in_progress/ のまま（追加指示）
+10. Foreman: Move according to patron's decision
+   - Accept → in_progress/ → completed/
+   - Suspend → in_progress/ → failed/
+   - Continue → stay in in_progress/ (additional instructions)
 ```
 
-### 競合を避けるための原則
+### Principles to Avoid Conflicts
 
-- **Miller**: 仕事ファイルは移動しない、work_log 更新と報告のみ
-- **Foreman**: 仕事ファイルの移動、旦那への確認、最終判断を行う
+- **Miller**: Does not move task files, only updates work_log and reports
+- **Foreman**: Moves task files, confirms with patron, makes final decisions
 
-## 旦那の介入
+## Patron Intervention
 
-- **通常**: Foremanペイン（ペイン1）で対話
-- **急ぎの時**: 各職人のペインで直接介入可能
+- **Normal**: Interact in Foreman pane (Pane 1)
+- **Urgent**: Can intervene directly in each agent's pane
 
-## オンデマンド職人
+## On-Demand Agents
 
-### Gleaner（聞き役・調査専門）
+### Gleaner (Researcher)
 
-**いつ使うか:**
-- Millerに実装を頼む前に技術調査が必要な時
-- ライブラリ/フレームワークの選定が必要な時
-- 既存コードの構造理解が必要な時
-- エラー原因の調査が必要な時
+**When to use:**
+- When technical research is needed before asking Miller to implement
+- When library/framework selection is needed
+- When understanding existing code structure is needed
+- When investigating error causes
 
-**起動方法:**
+**How to start:**
 ```bash
-./scripts/start_gleaner.sh  # ペイン3でClaude自動起動
-# 数秒待ってから指示を送る
+./scripts/start_gleaner.sh  # Auto-starts Claude in Pane 3
+# Wait a few seconds before sending instructions
 ```
 
-**持ち込み形式:**
+**Request format:**
 ```
-【調査持ち込み】task_20260130_state_mgmt: Reactの状態管理方法について調べてください。
-調査ポイント: Redux vs Context API の比較、推奨される使い分け
+[Research Request] task_20260130_state_mgmt: Please research React state management methods.
+Research points: Redux vs Context API comparison, recommended use cases
 ```
 
-### Sifter（目利き・レビュー専門）
+### Sifter (Reviewer)
 
-**いつ使うか:**
-- Millerから挽き上がり報告があり、コードレビューが必要な時
-- 旦那が品質確認を求めた時
-- 複雑な変更や重要な機能の実装後
+**When to use:**
+- When Miller reports completion and code review is needed
+- When patron requests quality confirmation
+- After complex changes or important feature implementation
 
-**起動方法:**
+**How to start:**
 ```bash
-./scripts/start_sifter.sh  # ペイン4でClaude自動起動
-# 数秒待ってから指示を送る
+./scripts/start_sifter.sh  # Auto-starts Claude in Pane 4
+# Wait a few seconds before sending instructions
 ```
 
-**持ち込み形式:**
+**Request format:**
 ```
-【レビュー持ち込み】task_20260130_auth: 以下のファイルを見てください。
-対象: src/auth.js, src/middleware.js
-```
-
-### 使用フロー例
-
-**標準パターン（計画策定→旦那許可→実装）:**
-```
-旦那 → Foreman → Gleaner → Foreman → 旦那 → Foreman → Miller → Foreman → 旦那
-         (計画持込)  (計画案)   (計画報告) (許可)  (実装指示) (挽き上がり) (受け取り)
+[Review Request] task_20260130_auth: Please review the following files.
+Target: src/auth.js, src/middleware.js
 ```
 
-**事後レビューパターン:**
+### Usage Flow Examples
+
+**Standard Pattern (Plan → Patron Approval → Implementation):**
 ```
-旦那 → Foreman → Gleaner → Foreman → 旦那 → Foreman → Miller → Foreman → Sifter → Foreman → 旦那
-         (計画持込)  (計画案)   (計画報告) (許可)  (実装指示) (挽き上がり) (レビュー) (結果)   (受け取り)
+Patron → Foreman → Gleaner → Foreman → Patron → Foreman → Miller → Foreman → Patron
+         (Plan Request) (Plan Draft) (Report Plan) (Approve) (Implement) (Completion) (Accept)
 ```
 
-## ステータスマーカー
+**Post-Implementation Review Pattern:**
+```
+Patron → Foreman → Gleaner → Foreman → Patron → Foreman → Miller → Foreman → Sifter → Foreman → Patron
+         (Plan Request) (Plan Draft) (Report Plan) (Approve) (Implement) (Completion) (Review) (Result) (Accept)
+```
 
-職人間の報告に含めるマーカー：
+## Status Markers
 
-| 職人 | マーカー | 意味 |
-|-------------|---------|------|
-| Miller | `[MILLER:DONE]` | 挽き上がり |
-| Miller | `[MILLER:BLOCKED]` | 手詰まり（旦那の判断必要） |
-| Foreman | `[FOREMAN:APPROVE]` | 受け取り |
-| Sifter | `[SIFTER:APPROVE]` | レビュー良し |
-| Sifter | `[SIFTER:REQUEST_CHANGES]` | 直しあり |
-| Sifter | `[SIFTER:COMMENT]` | 一言 |
-| Gleaner | `[GLEANER:PLAN_READY]` | 実装計画策定完了 |
-| Gleaner | `[GLEANER:DONE]` | 調査完了 |
-| Gleaner | `[GLEANER:NEED_MORE_INFO]` | もう少し情報が必要 |
+Markers included in inter-agent reports:
 
-## 自動実行モード
+| Agent | Marker | Meaning |
+|-------|--------|---------|
+| Miller | `[MILLER:DONE]` | Work completed |
+| Miller | `[MILLER:BLOCKED]` | Blocked (patron decision needed) |
+| Foreman | `[FOREMAN:APPROVE]` | Accepted |
+| Sifter | `[SIFTER:APPROVE]` | Review passed |
+| Sifter | `[SIFTER:REQUEST_CHANGES]` | Changes requested |
+| Sifter | `[SIFTER:COMMENT]` | Comment |
+| Gleaner | `[GLEANER:PLAN_READY]` | Implementation plan complete |
+| Gleaner | `[GLEANER:DONE]` | Research complete |
+| Gleaner | `[GLEANER:NEED_MORE_INFO]` | More information needed |
 
-職人は自動実行モードで起動し、毎回の承認を不要にします。
+## Automatic Execution Mode
+
+Agents are started in automatic execution mode, eliminating the need for approval each time.
 
 ### Claude Code
 ```bash
-# 通常（毎回承認が必要）
+# Normal (approval required each time)
 claude
 
-# 自動実行モード（承認なしで実行）
+# Automatic execution mode (execute without approval)
 claude --dangerously-skip-permissions
 ```
 
 ### OpenAI Codex CLI
 ```bash
-# 通常（提案モード）
+# Normal (suggestion mode)
 codex
 
-# 自動実行モード（承認なしで実行）
+# Automatic execution mode (execute without approval)
 codex --full-auto
 ```
 
-**設定ファイル（codex.toml）について:**
+**About configuration files (codex.toml):**
 
-Codex CLI は `--full-auto` オプションだけでは、ファイル修正やスクリプト実行時に許可を求めることがあります。
-これを避けるため、各ディレクトリに `codex.toml` を配置しています：
+With Codex CLI, even with the `--full-auto` option alone, it may request permission for file modifications or script execution.
+To avoid this, `codex.toml` is placed in each directory:
 
-- `codex.toml` - プロジェクトルート（全体設定）
-- `agents/foreman/codex.toml` - 親方用（管理操作のみ許可）
-- `agents/miller/codex.toml` - 挽き手用（実装操作を許可）
-- `agents/gleaner/codex.toml` - 聞き役用（調査操作を許可）
-- `agents/sifter/codex.toml` - 目利き用（レビュー操作を許可）
+- `codex.toml` - Project root (global settings)
+- `agents/foreman/codex.toml` - For Foreman (only management operations allowed)
+- `agents/miller/codex.toml` - For Miller (implementation operations allowed)
+- `agents/gleaner/codex.toml` - For Gleaner (research operations allowed)
+- `agents/sifter/codex.toml` - For Sifter (review operations allowed)
 
-これらの設定ファイルで `[auto_approve]` セクションに許可するコマンドを定義しています。
+These configuration files define allowed commands in the `[auto_approve]` section.
 
 ### GitHub Copilot CLI
 ```bash
-# 通常（毎回承認が必要）
+# Normal (approval required each time)
 copilot
 
-# 自動実行モード（承認なしで実行）
+# Automatic execution mode (execute without approval)
 copilot --allow-all
 ```
 
-緊急停止: `Ctrl+C` または `./scripts/stop.sh`
+Emergency stop: `Ctrl+C` or `./scripts/stop.sh`

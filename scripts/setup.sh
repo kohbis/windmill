@@ -1,69 +1,69 @@
 #!/bin/bash
-# setup.sh - Windmill 初期セットアップ
+# setup.sh - Windmill initial setup
 
 set -e
 
 MILL_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
-echo "Windmill (風車小屋) セットアップを開始..."
+echo "Starting Windmill setup..."
 
-# ディレクトリ作成
-echo "ディレクトリを作成中..."
-mkdir -p "$MILL_ROOT/tasks/pending"      # 待ち仕事
-mkdir -p "$MILL_ROOT/tasks/in_progress"  # 挽き中の仕事
-mkdir -p "$MILL_ROOT/tasks/completed"    # 挽き上がり
-mkdir -p "$MILL_ROOT/tasks/failed"       # 中断/保留
-mkdir -p "$MILL_ROOT/state"              # 職人状態管理
+# Create directories
+echo "Creating directories..."
+mkdir -p "$MILL_ROOT/tasks/pending"      # Pending tasks
+mkdir -p "$MILL_ROOT/tasks/in_progress"  # Tasks in progress
+mkdir -p "$MILL_ROOT/tasks/completed"    # Completed tasks
+mkdir -p "$MILL_ROOT/tasks/failed"       # Suspended/On hold
+mkdir -p "$MILL_ROOT/state"              # Agent state management
 mkdir -p "$MILL_ROOT/scripts"
-mkdir -p "$MILL_ROOT/agents/foreman"     # 職人専用ディレクトリ
+mkdir -p "$MILL_ROOT/agents/foreman"     # Agent-specific directories
 mkdir -p "$MILL_ROOT/agents/miller"
 mkdir -p "$MILL_ROOT/agents/sifter"
 mkdir -p "$MILL_ROOT/agents/gleaner"
-mkdir -p "$MILL_ROOT/feedback"           # 旦那からの声
+mkdir -p "$MILL_ROOT/feedback"           # Feedback from patron
 
-# 職人状態ファイル初期化（テンプレートからコピー）
-echo "職人状態を初期化中..."
+# Initialize agent state files (copy from templates)
+echo "Initializing agent states..."
 
 for template in "$MILL_ROOT/state"/*.yaml.template; do
   target="${template%.template}"
   if [ ! -f "$target" ]; then
     cp "$template" "$target"
-    echo "  $(basename "$target") を作成しました"
+    echo "  Created $(basename "$target")"
   else
-    echo "  $(basename "$target") は既に存在します（スキップ）"
+    echo "  $(basename "$target") already exists (skipped)"
   fi
 done
 
-# dashboard.md初期化（テンプレートからコピーしてタイムスタンプ置換）
-echo "dashboard.md を初期化中..."
+# Initialize dashboard.md (copy from template and replace timestamp)
+echo "Initializing dashboard.md..."
 if [ ! -f "$MILL_ROOT/dashboard.md" ]; then
   TIMESTAMP=$(date '+%Y-%m-%d %H:%M')
   sed "s/YYYY-MM-DD HH:MM/$TIMESTAMP/g" "$MILL_ROOT/dashboard.md.template" > "$MILL_ROOT/dashboard.md"
-  echo "  dashboard.md を作成しました"
+  echo "  Created dashboard.md"
 else
-  echo "  dashboard.md は既に存在します（スキップ）"
+  echo "  dashboard.md already exists (skipped)"
 fi
 
-# feedback初期化（テンプレートからコピー）
-echo "feedback を初期化中..."
+# Initialize feedback (copy from templates)
+echo "Initializing feedback..."
 for template in "$MILL_ROOT/feedback"/*.md.template; do
   target="${template%.template}"
   if [ ! -f "$target" ]; then
     cp "$template" "$target"
-    echo "  $(basename "$target") を作成しました"
+    echo "  Created $(basename "$target")"
   else
-    echo "  $(basename "$target") は既に存在します（スキップ）"
+    echo "  $(basename "$target") already exists (skipped)"
   fi
 done
 
-# .gitkeep作成（空ディレクトリ保持用）
+# Create .gitkeep files (to preserve empty directories)
 touch "$MILL_ROOT/tasks/pending/.gitkeep"
 touch "$MILL_ROOT/tasks/in_progress/.gitkeep"
 touch "$MILL_ROOT/tasks/completed/.gitkeep"
 touch "$MILL_ROOT/tasks/failed/.gitkeep"
 
-echo "セットアップ完了!"
+echo "Setup complete!"
 echo ""
-echo "次のステップ:"
-echo "  ./scripts/start.sh  - 職人を起動"
-echo "  ./scripts/status.sh - 状況を確認"
+echo "Next steps:"
+echo "  ./scripts/start.sh  - Start agents"
+echo "  ./scripts/status.sh - Check status"

@@ -1,15 +1,15 @@
-# Codex CLI 設定ファイル
-# 自動実行モード（--full-auto）用の許可設定
+# Codex CLI Configuration File
+# Permission settings for auto-execution mode (--full-auto)
 
-# 自動承認するコマンドパターン
+# Command patterns to auto-approve
 [auto_approve]
-# 読み取り操作
+# Read operations
 read = ["cat", "ls", "find", "grep", "head", "tail", "wc", "file", "stat"]
 
-# ファイル操作（gristプロジェクト内のみ許可）
+# File operations (only allowed within grist project)
 write = ["touch", "mkdir", "cp", "mv", "rm"]
 
-# スクリプト実行
+# Script execution
 execute = [
   "bash",
   "sh",
@@ -17,10 +17,10 @@ execute = [
   "tmux"
 ]
 
-# Git操作
+# Git operations
 git = ["git status", "git diff", "git log", "git show", "git branch"]
 
-# 許可するディレクトリパターン
+# Allowed directory patterns
 [paths]
 allow = [
   "tasks/**",

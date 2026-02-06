@@ -1,44 +1,44 @@
 #!/bin/bash
-# create_task.sh - 仕事YAML作成スクリプト
-# 使用者: Foreman
+# create_task.sh - Task YAML creation script
+# User: Foreman
 #
-# 使用例:
-#   ./scripts/agent/create_task.sh "認証機能の実装" "ステップ1" "ステップ2" "ステップ3"
-#   ./scripts/agent/create_task.sh --id custom_id "タイトル" "ステップ1"
+# Examples:
+#   ./scripts/agent/create_task.sh "Implement authentication" "Step 1" "Step 2" "Step 3"
+#   ./scripts/agent/create_task.sh --id custom_id "Title" "Step 1"
 
 set -e
 
 MILL_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 TEMPLATE_FILE="$MILL_ROOT/tasks/task.yaml.template"
 
-# ヘルプ表示
+# Display help
 show_help() {
     cat << EOF
-使用方法: create_task.sh [オプション] "<タイトル>" "<ステップ1>" [<ステップ2>...]
+Usage: create_task.sh [OPTIONS] "<title>" "<step1>" [<step2>...]
 
-仕事YAMLを tasks/pending/ に作成します。
-テンプレート: tasks/task.yaml.template を使用
+Creates a task YAML in tasks/pending/.
+Template: Uses tasks/task.yaml.template
 
-オプション:
-  --id <id>       カスタムIDを指定（デフォルト: task_YYYYMMDD_<slug>）
-  --context <text> コンテキスト情報を追加
-  --status <status> 初期ステータス（デフォルト: planning）
-  -h, --help      このヘルプを表示
+Options:
+  --id <id>       Specify custom ID (default: task_YYYYMMDD_<slug>)
+  --context <text> Add context information
+  --status <status> Initial status (default: planning)
+  -h, --help      Show this help
 
-ステータス:
-  planning    - 計画策定中（Gleaner との計画策定待ち）
-  pending     - 計画確定、実装待ち（旦那許可済み）
+Status:
+  planning    - Planning in progress (waiting for planning with Gleaner)
+  pending     - Plan confirmed, waiting for implementation (patron approved)
 
-例:
-  create_task.sh "認証機能の実装" "ログイン画面作成" "API連携" "テスト追加"
-  create_task.sh --id task_20260130_auth "認証機能" "ステップ1"
-  create_task.sh --context "前回の続き" "バグ修正" "原因調査" "修正実装"
-  create_task.sh --status pending "簡単な修正" "typo修正"
+Examples:
+  create_task.sh "Implement authentication" "Create login screen" "API integration" "Add tests"
+  create_task.sh --id task_20260130_auth "Authentication" "Step 1"
+  create_task.sh --context "Continuation from before" "Bug fix" "Investigate cause" "Implement fix"
+  create_task.sh --status pending "Simple fix" "Fix typo"
 EOF
     exit 0
 }
 
-# 引数解析
+# Parse arguments
 CUSTOM_ID=""
 CONTEXT=""
 INITIAL_STATUS="planning"
@@ -66,10 +66,10 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# 最低限の引数チェック
+# Minimum argument check
 if [ $# -lt 2 ]; then
-    echo "エラー: タイトルと最低1つのステップが必要です"
-    echo "使用方法: create_task.sh \"<タイトル>\" \"<ステップ1>\" [<ステップ2>...]"
+    echo "Error: Title and at least one step required"
+    echo "Usage: create_task.sh \"<title>\" \"<step1>\" [<step2>...]"
     exit 1
 fi
 
@@ -77,13 +77,13 @@ TITLE="$1"
 shift
 STEPS=("$@")
 
-# ID生成
+# Generate ID
 if [ -n "$CUSTOM_ID" ]; then
     TASK_ID="$CUSTOM_ID"
 else
-    # タイトルからslugを生成（簡易版：最初の単語をローマ字/英語で）
+    # Generate slug from title (simple version: first word in romaji/english)
     DATE_PART=$(date '+%Y%m%d')
-    # タイトルの最初の20文字を使用し、スペースをアンダースコアに
+    # Use first 20 characters of title, replace spaces with underscores
     SLUG=$(echo "$TITLE" | cut -c1-20 | sed 's/ /_/g' | sed 's/[^a-zA-Z0-9_]//g' | tr '[:upper:]' '[:lower:]')
     if [ -z "$SLUG" ]; then
         SLUG="task"
@@ -93,23 +93,23 @@ fi
 
 TASK_FILE="$MILL_ROOT/tasks/pending/${TASK_ID}.yaml"
 
-# 既存チェック
+# Check if exists
 if [ -f "$TASK_FILE" ]; then
-    echo "エラー: $TASK_FILE は既に存在します"
+    echo "Error: $TASK_FILE already exists"
     exit 1
 fi
 
-# テンプレートチェック
+# Check template
 if [ ! -f "$TEMPLATE_FILE" ]; then
-    echo "エラー: テンプレートファイルが見つかりません: $TEMPLATE_FILE"
-    echo "setup.sh を実行してください"
+    echo "Error: Template file not found: $TEMPLATE_FILE"
+    echo "Run setup.sh first"
     exit 1
 fi
 
-# タイムスタンプ
+# Timestamp
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
 
-# テンプレートからYAML生成（コメント行を除く基本部分のみ）
+# Generate YAML from template (basic part only, excluding comment lines)
 cat > "$TASK_FILE" << EOF
 id: $TASK_ID
 title: "$TITLE"
@@ -119,23 +119,23 @@ patron_input_required: false
 breakdown:
 EOF
 
-# ステップ追加
+# Add steps
 STEP_NUM=1
 for step in "${STEPS[@]}"; do
     echo "  - step${STEP_NUM}: \"$step\"" >> "$TASK_FILE"
     ((STEP_NUM++))
 done
 
-# planセクション（コメントとして追加、後でGleanerとの計画策定時に有効化）
+# Plan section (add as comment, to be activated after planning with Gleaner)
 cat >> "$TASK_FILE" << 'EOF'
 
-# --- 実装計画（Gleaner との計画策定後に追記） ---
+# --- Implementation Plan (added after planning with Gleaner) ---
 # plan:
 #   tech_selection: ""
 #   tech_reason: |
-#     
+#
 #   architecture: |
-#     
+#
 #   implementation_steps:
 #     - ""
 #   risks:
@@ -147,7 +147,7 @@ cat >> "$TASK_FILE" << 'EOF'
 #   approved_at: null
 EOF
 
-# コンテキスト追加（オプション）
+# Add context (optional)
 if [ -n "$CONTEXT" ]; then
     cat >> "$TASK_FILE" << EOF
 
@@ -156,18 +156,18 @@ context: |
 EOF
 fi
 
-# work_logとcreated_at
+# work_log and created_at
 cat >> "$TASK_FILE" << EOF
 
 work_log: []
 created_at: "$TIMESTAMP"
 EOF
 
-echo "作成完了: $TASK_FILE"
+echo "Created: $TASK_FILE"
 echo "ID: $TASK_ID"
-echo "ステータス: $INITIAL_STATUS"
+echo "Status: $INITIAL_STATUS"
 if [ "$INITIAL_STATUS" = "planning" ]; then
     echo ""
-    echo "次のステップ: Gleaner に計画持ち込みを送信してください"
-    echo "  send_to.sh gleaner \"【計画持ち込み】${TASK_ID}: ...\""
+    echo "Next step: Send plan request to Gleaner"
+    echo "  send_to.sh gleaner \"[Plan Request] ${TASK_ID}: ...\""
 fi

@@ -1,16 +1,16 @@
 #!/bin/bash
-# stop.sh - Windmill 全職人停止
+# stop.sh - Windmill stop all agents
 
 SESSION_NAME="windmill"
 
 if ! tmux has-session -t "$SESSION_NAME" 2>/dev/null; then
-    echo "セッション '$SESSION_NAME' は存在しません"
+    echo "Session '$SESSION_NAME' does not exist"
     exit 0
 fi
 
-echo "Windmill を停止中..."
+echo "Stopping Windmill..."
 
-# 各ペインにCtrl+Cを送信してClaudeを終了
+# Send Ctrl+C to each pane to terminate agents
 for pane in 0 1 2 3; do
     if tmux list-panes -t "$SESSION_NAME:0" 2>/dev/null | grep -q "^$pane:"; then
         tmux send-keys -t "$SESSION_NAME:0.$pane" C-c
@@ -18,7 +18,7 @@ for pane in 0 1 2 3; do
     fi
 done
 
-# セッション終了
+# Kill session
 tmux kill-session -t "$SESSION_NAME"
 
-echo "セッション '$SESSION_NAME' を終了しました"
+echo "Session '$SESSION_NAME' terminated"

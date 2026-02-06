@@ -1,143 +1,143 @@
 # Windmill
 
-マルチAIエージェント協調開発フレームワーク
+Multi-AI Agent Collaborative Development Framework
 
-複数のAIコーディングエージェントが役割分担して開発タスクを遂行する、tmuxベースのマルチエージェント環境です。
+A tmux-based multi-agent environment where multiple AI coding agents work together with role-based division of labor to execute development tasks.
 
-## 特徴
+## Features
 
-- **役割分担**: 管理・実装・レビュー・調査の4エージェント体制
-- **自動協調**: エージェント間のタスク受け渡しを自動化
-- **進捗可視化**: ダッシュボードでリアルタイムに状況把握
-- **マルチエージェント対応**: Claude Code / OpenAI Codex CLI / GitHub Copilot CLI
+- **Role Division**: 4-agent structure for management, implementation, review, and research
+- **Automatic Coordination**: Automated task handoff between agents
+- **Progress Visualization**: Real-time status monitoring via dashboard
+- **Multi-Agent Support**: Claude Code / OpenAI Codex CLI / GitHub Copilot CLI
 
-## 必要条件
+## Requirements
 
 - macOS / Linux
 - [tmux](https://github.com/tmux/tmux) 3.0+
-- 以下のいずれかのAIエージェント:
+- One of the following AI agents:
   - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) (Anthropic)
   - [OpenAI Codex CLI](https://github.com/openai/codex) (OpenAI)
   - [GitHub Copilot CLI](https://docs.github.com/en/copilot/concepts/agents/about-copilot-cli) (GitHub)
 
 > [!WARNING]
-> 本フレームワークはエージェントを自動実行モードで起動します。
+> This framework launches agents in automatic execution mode.
 > - Claude Code: `--dangerously-skip-permissions`
 > - OpenAI Codex CLI: `--full-auto`
 > - GitHub Copilot CLI: `--allow-all`
 >
-> これらのオプションにより、エージェントは確認なしでファイル操作やコマンド実行を行います。
-> 信頼できる環境でのみ使用してください。
+> These options allow agents to perform file operations and command execution without confirmation.
+> Use only in trusted environments.
 
-## クイックスタート
+## Quick Start
 
 ```bash
-# 1. リポジトリをクローン
+# 1. Clone the repository
 git clone https://github.com/kohbis/windmill.git
 cd windmill
 
-# 2. セットアップ
+# 2. Setup
 ./scripts/setup.sh
 
-# 3. 起動
+# 3. Start
 ./scripts/start.sh ${AGENT_TYPE} # AGENT_TYPE: claude (default) | codex | copilot
 # e.g, ./scripts/start.sh codex
 
-# 4. tmuxセッションに接続
+# 4. Attach to tmux session
 tmux attach -t windmill
 ```
 
-起動後、Foremanが自動起動し、タスクのヒアリングを開始します。
+After startup, Foreman automatically starts and begins task hearing.
 
-## エージェント構成
+## Agent Structure
 
-| 役割 | 名前 | 責務 |
-|------|------|------|
-| 管理 | Foreman | タスク分解・進捗監視・ユーザー対話 |
-| 実装 | Miller | コーディング・実装作業 |
-| レビュー | Sifter | コードレビュー・品質チェック |
-| 調査 | Gleaner | 技術調査・情報収集 |
+| Role | Name | Responsibility |
+|------|------|----------------|
+| Management | Foreman | Task decomposition, progress monitoring, user interaction |
+| Implementation | Miller | Coding and implementation work |
+| Review | Sifter | Code review, quality check |
+| Research | Gleaner | Technical research, information gathering |
 
-## tmuxレイアウト
+## tmux Layout
 
 ```
 ┌─────────────────┬──────────────┬──────────────┐
 │                 │   Foreman    │   Miller     │
-│   Status        │   (ペイン1)   │   (ペイン2)   │
-│   (ペイン0)      ├──────────────┼──────────────┤
+│   Status        │   (Pane 1)   │   (Pane 2)   │
+│   (Pane 0)      ├──────────────┼──────────────┤
 │                 │   Sifter     │   Gleaner    │
-│                 │   (ペイン4)   │   (ペイン3)   │
+│                 │   (Pane 4)   │   (Pane 3)   │
 └─────────────────┴──────────────┴──────────────┘
 ```
 
-## 基本的な使い方
+## Basic Usage
 
-### タスクを依頼する
+### Requesting Tasks
 
-Foremanペイン（ペイン1）でタスクを伝えます：
+Communicate tasks in the Foreman pane (Pane 1):
 
 ```
-認証機能を実装してください。JWTトークンを使用し、
-ログイン・ログアウト・トークンリフレッシュのエンドポイントが必要です。
+Please implement authentication feature. Use JWT tokens and
+need endpoints for login, logout, and token refresh.
 ```
 
-Foremanがタスクを分解し、Millerに指示を出します。
+Foreman decomposes the task and issues instructions to Miller.
 
-### 状況確認・停止
+### Status Check / Stop
 
 ```bash
-# 状況確認
+# Check status
 ./scripts/status.sh
 
-# 停止
+# Stop
 ./scripts/stop.sh
 ```
 
-## ワークフロー例
+## Workflow Examples
 
-### 基本フロー
+### Basic Flow
 ```
 User → Foreman → Miller → Foreman → User
-       (分解)    (実装)   (報告)   (確認)
+       (Decompose) (Implement) (Report) (Confirm)
 ```
 
-### 調査付きフロー
+### Flow with Research
 ```
 User → Foreman → Gleaner → Foreman → Miller → Foreman → User
-       (調査依頼)  (調査)   (結果共有)  (実装)   (報告)
+       (Research Request) (Research) (Share Results) (Implement) (Report)
 ```
 
-### レビュー付きフロー
+### Flow with Review
 ```
 User → Foreman → Miller → Foreman → Sifter → Foreman → User
-       (実装依頼) (実装)   (レビュー依頼) (レビュー) (報告)
+       (Implementation Request) (Implement) (Review Request) (Review) (Report)
 ```
 
-## ディレクトリ構造
+## Directory Structure
 
 ```
 windmill/
-├── agents/           # エージェントプロンプト
+├── agents/           # Agent prompts
 │   ├── foreman/
 │   ├── miller/
 │   ├── sifter/
 │   └── gleaner/
-├── tasks/            # タスク管理
-│   ├── pending/      # 待機中
-│   ├── in_progress/  # 進行中
-│   ├── completed/    # 完了
-│   └── failed/       # 失敗/中断
-├── state/            # エージェント状態（YAML）
-├── feedback/         # フィードバック
-├── scripts/          # 操作スクリプト
-│   └── agent/        # エージェント用スクリプト
-└── dashboard.md      # 進捗ダッシュボード
+├── tasks/            # Task management
+│   ├── pending/      # Pending
+│   ├── in_progress/  # In progress
+│   ├── completed/    # Completed
+│   └── failed/       # Failed/Suspended
+├── state/            # Agent state (YAML)
+├── feedback/         # Feedback
+├── scripts/          # Operation scripts
+│   └── agent/        # Agent scripts
+└── dashboard.md      # Progress dashboard
 ```
 
-## 詳細ドキュメント
+## Detailed Documentation
 
-詳しい仕様・設定については [AGENTS.md](AGENTS.md) を参照してください。
+For detailed specifications and settings, see [AGENTS.md](AGENTS.md).
 
-## ライセンス
+## License
 
 MIT License

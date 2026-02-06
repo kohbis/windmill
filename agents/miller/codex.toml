@@ -1,14 +1,14 @@
-# Miller (挽き手) 用 Codex CLI 設定
-# 挽き手は実装作業を担当
+# Miller (Implementer) Codex CLI Configuration
+# Miller handles implementation work
 
 [auto_approve]
-# 読み取り操作
+# Read operations
 read = ["cat", "ls", "find", "grep", "head", "tail", "wc", "file"]
 
-# ファイル操作（プロジェクト全体）
+# File operations (entire project)
 write = ["touch", "mkdir", "cp", "mv", "rm"]
 
-# スクリプト・コマンド実行
+# Script/command execution
 execute = [
   "bash",
   "sh",
@@ -25,10 +25,10 @@ execute = [
   "tmux send-keys"
 ]
 
-# テスト実行
+# Test execution
 test = ["npm test", "pytest", "go test", "cargo test", "make test"]
 
-# Git操作
+# Git operations
 git = ["git status", "git diff", "git log", "git add", "git commit"]
 
 [paths]

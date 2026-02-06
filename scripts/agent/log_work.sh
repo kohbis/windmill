@@ -1,37 +1,37 @@
 #!/bin/bash
-# log_work.sh - 仕事YAMLのwork_log追記スクリプト
-# 使用者: Foreman, Miller
+# log_work.sh - Task YAML work_log append script
+# User: Foreman, Miller
 #
-# 使用例:
-#   ./scripts/agent/log_work.sh task_xxx "実装開始"
-#   ./scripts/agent/log_work.sh task_xxx "挽き上がり" "全テストパス"
+# Examples:
+#   ./scripts/agent/log_work.sh task_xxx "Started implementation"
+#   ./scripts/agent/log_work.sh task_xxx "Work complete" "All tests passed"
 
 set -e
 
 MILL_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 
-# ヘルプ表示
+# Display help
 show_help() {
     cat << EOF
-使用方法: log_work.sh <task_id> "<action>" ["<details>"]
+Usage: log_work.sh <task_id> "<action>" ["<details>"]
 
-仕事YAMLのwork_logにエントリを追記します。
+Appends an entry to the work_log in task YAML.
 
-引数:
-  task_id   仕事ID（例: task_20260130_auth）
-  action    作業内容の説明（必須）
-  details   詳細情報（オプション）
+Arguments:
+  task_id   Task ID (e.g., task_20260130_auth)
+  action    Description of work performed (required)
+  details   Detailed information (optional)
 
-例:
-  log_work.sh task_20260130_auth "実装開始"
-  log_work.sh task_20260130_auth "挽き上がり" "全テストパス"
-  log_work.sh task_20260130_auth "レビュー指摘対応" "変数名を修正"
-  log_work.sh task_20260130_auth "手詰まり" "依存ライブラリのバージョン問題"
+Examples:
+  log_work.sh task_20260130_auth "Started implementation"
+  log_work.sh task_20260130_auth "Work complete" "All tests passed"
+  log_work.sh task_20260130_auth "Addressed review feedback" "Fixed variable names"
+  log_work.sh task_20260130_auth "Blocked" "Dependency library version issue"
 EOF
     exit 0
 }
 
-# 引数チェック
+# Argument check
 if [ $# -lt 2 ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
     show_help
 fi
@@ -40,7 +40,7 @@ TASK_ID="$1"
 ACTION="$2"
 DETAILS="${3:-}"
 
-# タスクファイルを探す
+# Find task file
 TASK_FILE=""
 for dir in pending in_progress completed failed; do
     if [ -f "$MILL_ROOT/tasks/$dir/${TASK_ID}.yaml" ]; then
@@ -50,14 +50,14 @@ for dir in pending in_progress completed failed; do
 done
 
 if [ -z "$TASK_FILE" ]; then
-    echo "エラー: タスク '$TASK_ID' が見つかりません"
+    echo "Error: Task '$TASK_ID' not found"
     exit 1
 fi
 
-# タイムスタンプ
+# Timestamp
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
 
-# work_logエントリを作成
+# Create work_log entry
 if [ -n "$DETAILS" ]; then
     LOG_ENTRY="  - timestamp: \"$TIMESTAMP\"
     action: \"$ACTION\"
@@ -67,17 +67,17 @@ else
     action: \"$ACTION\""
 fi
 
-# work_log: [] の場合（空の配列）を検出して置換
+# Detect and replace work_log: [] (empty array)
 if grep -q "^work_log: \[\]" "$TASK_FILE"; then
-    # 空の配列を展開形式に変換
+    # Convert empty array to expanded format
     if [[ "$OSTYPE" == "darwin"* ]]; then
         sed -i '' "s/^work_log: \[\]/work_log:\n$LOG_ENTRY/" "$TASK_FILE"
     else
         sed -i "s/^work_log: \[\]/work_log:\n$LOG_ENTRY/" "$TASK_FILE"
     fi
 else
-    # 既存のwork_logに追記
-    # work_log:の次の行に追記（awkを使用）
+    # Append to existing work_log
+    # Append after work_log: line (using awk)
     TEMP_FILE=$(mktemp)
     awk -v entry="$LOG_ENTRY" '
         /^work_log:/ {
@@ -90,7 +90,7 @@ else
     mv "$TEMP_FILE" "$TASK_FILE"
 fi
 
-echo "work_log追記完了: $TASK_ID"
+echo "work_log appended: $TASK_ID"
 echo "  timestamp: $TIMESTAMP"
 echo "  action: $ACTION"
 if [ -n "$DETAILS" ]; then

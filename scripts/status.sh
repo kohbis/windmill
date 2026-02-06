@@ -1,9 +1,9 @@
 #!/bin/bash
-# status.sh - Windmill 状況表示
+# status.sh - Windmill status display
 
 MILL_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
-# YAMLから値を取得する簡易関数（コメント除去）
+# Simple function to get value from YAML (remove comments)
 get_yaml_value() {
     local file="$1"
     local key="$2"
@@ -15,38 +15,38 @@ echo "  WINDMILL STATUS - $(date '+%Y-%m-%d %H:%M:%S')"
 echo "═══════════════════════════════════════════════════════════"
 echo ""
 
-# 職人状態
-echo "【職人状態】"
+# Agent status
+echo "[Agent Status]"
 echo "───────────────────────────────────────────────────────────"
 
 # Foreman
 foreman_status=$(get_yaml_value "$MILL_ROOT/state/foreman.yaml" "status")
 foreman_task=$(get_yaml_value "$MILL_ROOT/state/foreman.yaml" "current_task")
 [[ "$foreman_task" == "null" ]] && foreman_task=""
-printf "  %-12s │ %-10s │ %s\n" "Foreman" "${foreman_status:-unknown}" "${foreman_task:-なし}"
+printf "  %-12s │ %-10s │ %s\n" "Foreman" "${foreman_status:-unknown}" "${foreman_task:-none}"
 
 # Miller
 miller_status=$(get_yaml_value "$MILL_ROOT/state/miller.yaml" "status")
 miller_task=$(get_yaml_value "$MILL_ROOT/state/miller.yaml" "current_task")
 [[ "$miller_task" == "null" ]] && miller_task=""
-printf "  %-12s │ %-10s │ %s\n" "Miller" "${miller_status:-unknown}" "${miller_task:-なし}"
+printf "  %-12s │ %-10s │ %s\n" "Miller" "${miller_status:-unknown}" "${miller_task:-none}"
 
 # Sifter
 sifter_status=$(get_yaml_value "$MILL_ROOT/state/sifter.yaml" "status")
 sifter_task=$(get_yaml_value "$MILL_ROOT/state/sifter.yaml" "current_task")
 [[ "$sifter_task" == "null" ]] && sifter_task=""
-printf "  %-12s │ %-10s │ %s\n" "Sifter" "${sifter_status:-inactive}" "${sifter_task:-なし}"
+printf "  %-12s │ %-10s │ %s\n" "Sifter" "${sifter_status:-inactive}" "${sifter_task:-none}"
 
 # Gleaner
 gleaner_status=$(get_yaml_value "$MILL_ROOT/state/gleaner.yaml" "status")
 gleaner_task=$(get_yaml_value "$MILL_ROOT/state/gleaner.yaml" "current_task")
 [[ "$gleaner_task" == "null" ]] && gleaner_task=""
-printf "  %-12s │ %-10s │ %s\n" "Gleaner" "${gleaner_status:-inactive}" "${gleaner_task:-なし}"
+printf "  %-12s │ %-10s │ %s\n" "Gleaner" "${gleaner_status:-inactive}" "${gleaner_task:-none}"
 
 echo ""
 
-# 仕事キュー状態
-echo "【仕事キュー】"
+# Task queue status
+echo "[Task Queue]"
 echo "───────────────────────────────────────────────────────────"
 
 pending_count=$(find "$MILL_ROOT/tasks/pending" -name "*.yaml" 2>/dev/null | wc -l | tr -d ' ')
@@ -54,16 +54,16 @@ in_progress_count=$(find "$MILL_ROOT/tasks/in_progress" -name "*.yaml" 2>/dev/nu
 completed_count=$(find "$MILL_ROOT/tasks/completed" -name "*.yaml" 2>/dev/null | wc -l | tr -d ' ')
 failed_count=$(find "$MILL_ROOT/tasks/failed" -name "*.yaml" 2>/dev/null | wc -l | tr -d ' ')
 
-printf "  %-15s │ %3d 件  (待ち仕事)\n" "pending/" "$pending_count"
-printf "  %-15s │ %3d 件  (挽き中の仕事)\n" "in_progress/" "$in_progress_count"
-printf "  %-15s │ %3d 件  (挽き上がり)\n" "completed/" "$completed_count"
-printf "  %-15s │ %3d 件  (中断/保留)\n" "failed/" "$failed_count"
+printf "  %-15s │ %3d items  (pending tasks)\n" "pending/" "$pending_count"
+printf "  %-15s │ %3d items  (tasks in progress)\n" "in_progress/" "$in_progress_count"
+printf "  %-15s │ %3d items  (completed)\n" "completed/" "$completed_count"
+printf "  %-15s │ %3d items  (suspended/on hold)\n" "failed/" "$failed_count"
 
 echo ""
 
-# 挽き中の仕事詳細
+# In-progress task details
 if [ "$in_progress_count" -gt 0 ]; then
-    echo "【挽き中の仕事詳細】"
+    echo "[In-Progress Task Details]"
     echo "───────────────────────────────────────────────────────────"
     for task_file in "$MILL_ROOT/tasks/in_progress"/*.yaml; do
         if [ -f "$task_file" ]; then
@@ -72,17 +72,17 @@ if [ "$in_progress_count" -gt 0 ]; then
             task_status=$(get_yaml_value "$task_file" "status")
             assigned=$(get_yaml_value "$task_file" "assigned_to")
             printf "  %s: %s\n" "$task_id" "$task_title"
-            printf "    状態: %s  担当: %s\n" "$task_status" "${assigned:-未割当}"
+            printf "    Status: %s  Assigned: %s\n" "$task_status" "${assigned:-unassigned}"
         fi
     done
     echo ""
 fi
 
-# ダッシュボード表示
+# Dashboard display
 if [ -f "$MILL_ROOT/dashboard.md" ]; then
-    echo "【ダッシュボード】"
+    echo "[Dashboard]"
     echo "───────────────────────────────────────────────────────────"
-    # 最初の20行を表示（ヘッダー除去）
+    # Display first 20 lines (remove header)
     head -20 "$MILL_ROOT/dashboard.md" | tail -n +2
     echo ""
 fi

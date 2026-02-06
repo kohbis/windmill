@@ -1,14 +1,14 @@
-# Foreman (親方) 用 Codex CLI 設定
-# 親方は仕事管理のみ、実装は行わない
+# Foreman (Manager) Codex CLI Configuration
+# Foreman handles task management only, no implementation
 
 [auto_approve]
-# 読み取り操作
+# Read operations
 read = ["cat", "ls", "find", "grep", "head", "tail", "wc"]
 
-# ファイル操作（管理ファイルのみ）
+# File operations (management files only)
 write = ["touch", "mkdir", "cp", "mv"]
 
-# スクリプト実行
+# Script execution
 execute = [
   "bash",
   "sh",
@@ -16,7 +16,7 @@ execute = [
   "tmux send-keys"
 ]
 
-# Git操作
+# Git operations
 git = ["git status", "git diff", "git log"]
 
 [paths]

@@ -1,19 +1,19 @@
 # Feedback Inbox
 
-未対応のフィードバックを蓄積します。
-対応後は archive.md に移動してください。
+Accumulates unaddressed feedback.
+After addressing, move to archive.md.
 
 ---
 
-<!-- フォーマット例:
+<!-- Format example:
 ## YYYY-MM-DD
 
-### [task_YYYYMMDD_summary] タスクタイトル
-- 良かった点: 
-- 改善点: 
-- その他: 
+### [task_YYYYMMDD_summary] Task title
+- What went well:
+- Areas for improvement:
+- Other:
 
-### [一般] カテゴリ（ワークフロー、ツール等）
-- 内容: 
+### [General] Category (Workflow, Tools, etc.)
+- Content:
 -->
 

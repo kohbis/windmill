@@ -1,41 +1,41 @@
 #!/bin/bash
-# send_to.sh - 職人への指示送信スクリプト
-# 使用者: 全職人
+# send_to.sh - Send instructions to agents script
+# User: All agents
 #
-# 使用例:
-#   ./scripts/agent/send_to.sh miller "tasks/in_progress/task_xxx.yaml を処理してください"
-#   ./scripts/agent/send_to.sh foreman "[MILLER:DONE] task_xxx 挽き上がり"
+# Examples:
+#   ./scripts/agent/send_to.sh miller "Please process tasks/in_progress/task_xxx.yaml"
+#   ./scripts/agent/send_to.sh foreman "[MILLER:DONE] task_xxx completed"
 
 set -e
 
 SESSION_NAME="windmill"
 WINDOW_NAME="windmill"
 
-# ヘルプ表示
+# Display help
 show_help() {
     cat << EOF
-使用方法: send_to.sh <職人名> "<メッセージ>"
+Usage: send_to.sh <agent_name> "<message>"
 
-指定した職人のtmuxペインにメッセージを送信します。
-tmux send-keysの2分割ルールを自動で適用します。
+Sends a message to the specified agent's tmux pane.
+Automatically applies the 2-part send rule for tmux send-keys.
 
-職人名:
-  foreman  - 親方 (ペイン1)
-  miller   - 挽き手 (ペイン2)
-  gleaner  - 聞き役 (ペイン3)
-  sifter   - 目利き (ペイン4)
-  status   - ステータス画面 (ペイン0)
+Agent names:
+  foreman  - Foreman (pane 1)
+  miller   - Miller (pane 2)
+  gleaner  - Gleaner (pane 3)
+  sifter   - Sifter (pane 4)
+  status   - Status screen (pane 0)
 
-例:
-  send_to.sh miller "tasks/in_progress/task_xxx.yaml を処理してください"
-  send_to.sh foreman "[MILLER:DONE] task_xxx 挽き上がり"
-  send_to.sh gleaner "【調査持ち込み】task_xxx: Reactの状態管理について調べてください"
-  send_to.sh sifter "【レビュー持ち込み】task_xxx: src/auth.jsを見てください"
+Examples:
+  send_to.sh miller "Please process tasks/in_progress/task_xxx.yaml"
+  send_to.sh foreman "[MILLER:DONE] task_xxx completed"
+  send_to.sh gleaner "[Research Request] task_xxx: Please research React state management"
+  send_to.sh sifter "[Review Request] task_xxx: Please review src/auth.js"
 EOF
     exit 0
 }
 
-# 引数チェック
+# Argument check
 if [ $# -lt 2 ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
     show_help
 fi
@@ -43,7 +43,7 @@ fi
 TARGET="$1"
 MESSAGE="$2"
 
-# 職人名からペイン番号を取得
+# Get pane number from agent name
 case "$TARGET" in
     status)
         PANE=0
@@ -61,23 +61,23 @@ case "$TARGET" in
         PANE=4
         ;;
     *)
-        echo "エラー: 無効な職人名 '$TARGET'"
-        echo "有効な職人名: foreman, miller, gleaner, sifter, status"
+        echo "Error: Invalid agent name '$TARGET'"
+        echo "Valid agent names: foreman, miller, gleaner, sifter, status"
         exit 1
         ;;
 esac
 
-# tmuxセッション存在チェック
+# Check tmux session exists
 if ! tmux has-session -t "$SESSION_NAME" 2>/dev/null; then
-    echo "エラー: tmuxセッション '$SESSION_NAME' が存在しません"
-    echo "先に ./scripts/start.sh を実行してください"
+    echo "Error: tmux session '$SESSION_NAME' does not exist"
+    echo "Run ./scripts/start.sh first"
     exit 1
 fi
 
-# メッセージ送信（2分割ルール適用）
+# Send message (apply 2-part rule)
 tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.$PANE" "$MESSAGE"
 sleep 0.2
 tmux send-keys -t "$SESSION_NAME:$WINDOW_NAME.$PANE" Enter
 
-echo "送信完了: $TARGET (ペイン$PANE)"
-echo "  メッセージ: $MESSAGE"
+echo "Sent to: $TARGET (pane $PANE)"
+echo "  Message: $MESSAGE"

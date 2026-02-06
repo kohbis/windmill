@@ -1,14 +1,14 @@
-# Gleaner (聞き役) 用 Codex CLI 設定
-# 聞き役は調査・リサーチを担当
+# Gleaner (Researcher) Codex CLI Configuration
+# Gleaner handles research and investigation
 
 [auto_approve]
-# 読み取り操作（調査に必要）
+# Read operations (needed for research)
 read = ["cat", "ls", "find", "grep", "head", "tail", "wc", "file", "stat"]
 
-# ファイル操作（状態ファイルのみ）
+# File operations (state files only)
 write = ["touch"]
 
-# スクリプト実行
+# Script execution
 execute = [
   "bash",
   "sh",
@@ -16,10 +16,10 @@ execute = [
   "tmux send-keys"
 ]
 
-# 調査用コマンド
+# Investigation commands
 investigate = ["curl", "wget"]
 
-# Git操作（読み取りのみ）
+# Git operations (read-only)
 git = ["git status", "git diff", "git log", "git show", "git blame"]
 
 [paths]
@@ -28,5 +28,5 @@ allow = [
 ]
 
 [paths.readonly]
-# 聞き役は読み取りのみ、編集は基本しない
+# Gleaner is read-only, no editing as a rule
 allow = ["../../**"]

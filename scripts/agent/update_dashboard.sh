@@ -1,42 +1,42 @@
 #!/bin/bash
-# update_dashboard.sh - ダッシュボード自動更新スクリプト
-# 使用者: Foreman
+# update_dashboard.sh - Dashboard auto-update script
+# User: Foreman
 #
-# 使用例:
+# Examples:
 #   ./scripts/agent/update_dashboard.sh
-#   ./scripts/agent/update_dashboard.sh --log "Millerに指示送信"
+#   ./scripts/agent/update_dashboard.sh --log "Sent instructions to Miller"
 
 set -e
 
 MILL_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 DASHBOARD="$MILL_ROOT/dashboard.md"
 
-# ヘルプ表示
+# Display help
 show_help() {
     cat << EOF
-使用方法: update_dashboard.sh [オプション]
+Usage: update_dashboard.sh [OPTIONS]
 
-ダッシュボード（dashboard.md）を仕事キューの状態から自動更新します。
+Auto-updates dashboard (dashboard.md) from task queue status.
 
-オプション:
-  --log "<メッセージ>"  作業ログにエントリを追加
-  -h, --help           このヘルプを表示
+Options:
+  --log "<message>"  Add entry to work log
+  -h, --help         Show this help
 
-例:
-  update_dashboard.sh                         # 全体を更新
-  update_dashboard.sh --log "Millerに指示送信"  # ログ追記のみ
+Examples:
+  update_dashboard.sh                             # Full update
+  update_dashboard.sh --log "Sent instructions to Miller"  # Log append only
 EOF
     exit 0
 }
 
-# YAMLから値を取得する簡易関数
+# Simple function to get value from YAML
 get_yaml_value() {
     local file="$1"
     local key="$2"
     grep "^${key}:" "$file" 2>/dev/null | sed "s/^${key}: *//" | sed 's/  *#.*//' | tr -d '"'
 }
 
-# 引数解析
+# Parse arguments
 LOG_MESSAGE=""
 LOG_ONLY=false
 
@@ -51,52 +51,52 @@ while [[ $# -gt 0 ]]; do
             show_help
             ;;
         *)
-            echo "エラー: 不明なオプション '$1'"
+            echo "Error: Unknown option '$1'"
             show_help
             ;;
     esac
 done
 
-# タイムスタンプ
+# Timestamp
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M')
 TIME_ONLY=$(date '+%H:%M')
 
-# ログ追記のみの場合
+# Log append only mode
 if [ "$LOG_ONLY" = true ] && [ -n "$LOG_MESSAGE" ]; then
     if [ -f "$DASHBOARD" ]; then
-        # 作業ログセクションの末尾に追記
+        # Append to end of work log section
         echo "- $TIMESTAMP $LOG_MESSAGE" >> "$DASHBOARD"
-        
-        # 最終更新も更新
+
+        # Update last updated
         if [[ "$OSTYPE" == "darwin"* ]]; then
-            sed -i '' "s/^最終更新: .*/最終更新: $TIMESTAMP/" "$DASHBOARD"
+            sed -i '' "s/^Last updated: .*/Last updated: $TIMESTAMP/" "$DASHBOARD"
         else
-            sed -i "s/^最終更新: .*/最終更新: $TIMESTAMP/" "$DASHBOARD"
+            sed -i "s/^Last updated: .*/Last updated: $TIMESTAMP/" "$DASHBOARD"
         fi
-        
-        echo "作業ログ追記完了: $LOG_MESSAGE"
+
+        echo "Work log appended: $LOG_MESSAGE"
     else
-        echo "エラー: dashboard.md が見つかりません"
+        echo "Error: dashboard.md not found"
         exit 1
     fi
     exit 0
 fi
 
-# 全体更新
-# 進行中の仕事を収集
+# Full update
+# Collect in-progress tasks
 IN_PROGRESS=""
 for task_file in "$MILL_ROOT/tasks/in_progress"/*.yaml; do
     if [ -f "$task_file" ]; then
         task_id=$(get_yaml_value "$task_file" "id")
         task_title=$(get_yaml_value "$task_file" "title")
         assigned=$(get_yaml_value "$task_file" "assigned_to")
-        [[ "$assigned" == "null" ]] && assigned="未割当"
-        IN_PROGRESS="${IN_PROGRESS}- [ ] ${task_id}: ${task_title} (${assigned}担当)\n"
+        [[ "$assigned" == "null" ]] && assigned="unassigned"
+        IN_PROGRESS="${IN_PROGRESS}- [ ] ${task_id}: ${task_title} (${assigned} assigned)\n"
     fi
 done
-[ -z "$IN_PROGRESS" ] && IN_PROGRESS="（なし）\n"
+[ -z "$IN_PROGRESS" ] && IN_PROGRESS="(none)\n"
 
-# 完了した仕事を収集（最新5件）
+# Collect completed tasks (latest 5)
 COMPLETED=""
 completed_files=$(ls -t "$MILL_ROOT/tasks/completed"/*.yaml 2>/dev/null | head -5)
 for task_file in $completed_files; do
@@ -106,9 +106,9 @@ for task_file in $completed_files; do
         COMPLETED="${COMPLETED}- [x] ${task_id}: ${task_title}\n"
     fi
 done
-[ -z "$COMPLETED" ] && COMPLETED="（なし）\n"
+[ -z "$COMPLETED" ] && COMPLETED="(none)\n"
 
-# 待ち仕事を収集
+# Collect pending tasks
 PENDING=""
 for task_file in "$MILL_ROOT/tasks/pending"/*.yaml; do
     if [ -f "$task_file" ]; then
@@ -118,35 +118,35 @@ for task_file in "$MILL_ROOT/tasks/pending"/*.yaml; do
     fi
 done
 
-# 既存の作業ログを保持
+# Preserve existing work log
 EXISTING_LOG=""
 if [ -f "$DASHBOARD" ]; then
-    EXISTING_LOG=$(awk '/^## 作業ログ/,0 { if (!/^## 作業ログ/) print }' "$DASHBOARD")
+    EXISTING_LOG=$(awk '/^## Work Log/,0 { if (!/^## Work Log/) print }' "$DASHBOARD")
 fi
-[ -z "$EXISTING_LOG" ] && EXISTING_LOG="- $TIME_ONLY ダッシュボード更新"
+[ -z "$EXISTING_LOG" ] && EXISTING_LOG="- $TIME_ONLY Dashboard updated"
 
-# 要対応セクション
-NEEDS_ACTION="（なし）"
+# Needs attention section
+NEEDS_ACTION="(none)"
 if [ -n "$PENDING" ]; then
-    NEEDS_ACTION="待ち仕事あり:\n${PENDING}"
+    NEEDS_ACTION="Pending tasks:\n${PENDING}"
 fi
 
-# ダッシュボード生成
+# Generate dashboard
 cat > "$DASHBOARD" << EOF
 # Windmill Dashboard
-最終更新: $TIMESTAMP
+Last updated: $TIMESTAMP
 
-## 進行中
+## In Progress
 $(echo -e "$IN_PROGRESS" | sed 's/\\n$//')
 
-## 完了
+## Completed
 $(echo -e "$COMPLETED" | sed 's/\\n$//')
 
-## 要対応（旦那の判断待ち）
+## Needs Attention (Waiting for patron decision)
 $(echo -e "$NEEDS_ACTION" | sed 's/\\n$//')
 
-## 作業ログ
+## Work Log
 $EXISTING_LOG
 EOF
 
-echo "ダッシュボード更新完了: $DASHBOARD"
+echo "Dashboard updated: $DASHBOARD"

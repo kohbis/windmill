@@ -1,20 +1,20 @@
 # Feedback Archive
 
-対応済みのフィードバックを蓄積します。
+Accumulates addressed feedback.
 
 ---
 
-<!-- フォーマット例:
+<!-- Format example:
 ## YYYY-MM-DD
 
-### [task_YYYYMMDD_summary] タスクタイトル
-- 良かった点: 
-- 改善点: 
-- その他: 
-- 対応内容: （どのように対応したか）
+### [task_YYYYMMDD_summary] Task title
+- What went well:
+- Areas for improvement:
+- Other:
+- Response: (How it was addressed)
 
-### [一般] カテゴリ（ワークフロー、ツール等）
-- 内容: 
-- 対応内容: 
+### [General] Category (Workflow, Tools, etc.)
+- Content:
+- Response:
 -->
 

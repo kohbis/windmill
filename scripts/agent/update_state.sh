@@ -1,53 +1,53 @@
 #!/bin/bash
-# update_state.sh - 職人状態ファイル更新スクリプト
-# 使用者: 全職人
+# update_state.sh - Agent state file update script
+# User: All agents
 #
-# 使用例:
+# Examples:
 #   ./scripts/agent/update_state.sh miller working task_xxx
-#   ./scripts/agent/update_state.sh miller working task_xxx "実装中"
+#   ./scripts/agent/update_state.sh miller working task_xxx "Implementing"
 #   ./scripts/agent/update_state.sh miller idle
-#   ./scripts/agent/update_state.sh miller blocked task_xxx "APIエラーで停止"
+#   ./scripts/agent/update_state.sh miller blocked task_xxx "Stopped due to API error"
 #   ./scripts/agent/update_state.sh sifter reviewing task_xxx
 
 set -e
 
 MILL_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 
-# ヘルプ表示
+# Display help
 show_help() {
     cat << EOF
-使用方法: update_state.sh <職人名> <status> [current_task] [progress]
+Usage: update_state.sh <agent_name> <status> [current_task] [progress]
 
-職人の状態ファイル（state/*.yaml）を更新します。
+Updates the agent's state file (state/*.yaml).
 
-引数:
-  職人名        foreman, miller, sifter, gleaner
-  status        職人ごとの有効なステータス（下記参照）
-  current_task  現在の仕事ID（idle以外の場合に指定）
-  progress      現在の進捗状況（任意、作業中/ブロック時に記載推奨）
+Arguments:
+  agent_name    foreman, miller, sifter, gleaner
+  status        Valid status for each agent (see below)
+  current_task  Current task ID (specify when not idle)
+  progress      Current progress status (optional, recommended for working/blocked)
 
-ステータス一覧:
+Status list:
   foreman:  idle, working, waiting_patron
   miller:   idle, working, blocked
   sifter:   inactive, idle, reviewing
   gleaner:  inactive, idle, researching
 
-例:
-  update_state.sh miller working task_20260130_auth "実装開始"
-  update_state.sh miller blocked task_20260130_auth "外部API接続エラー"
+Examples:
+  update_state.sh miller working task_20260130_auth "Starting implementation"
+  update_state.sh miller blocked task_20260130_auth "External API connection error"
   update_state.sh miller idle
-  update_state.sh sifter reviewing task_20260130_auth "コードレビュー中"
-  update_state.sh gleaner researching task_20260130_auth "ライブラリ調査中"
-  update_state.sh foreman waiting_patron task_20260130_auth "旦那の判断待ち"
+  update_state.sh sifter reviewing task_20260130_auth "Code review in progress"
+  update_state.sh gleaner researching task_20260130_auth "Researching libraries"
+  update_state.sh foreman waiting_patron task_20260130_auth "Waiting for patron decision"
 
-注意:
-  - idle/inactive 時は current_task と progress は自動的にクリアされます
-  - blocked 時は progress に問題内容を記載することを推奨します
+Notes:
+  - When idle/inactive, current_task and progress are automatically cleared
+  - When blocked, it's recommended to describe the problem in progress
 EOF
     exit 0
 }
 
-# 引数チェック
+# Argument check
 if [ $# -lt 2 ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
     show_help
 fi
@@ -57,25 +57,25 @@ STATUS="$2"
 CURRENT_TASK="${3:-null}"
 PROGRESS="${4:-}"
 
-# 職人名検証
+# Agent name validation
 case "$AGENT" in
     foreman|miller|sifter|gleaner)
         ;;
     *)
-        echo "エラー: 無効な職人名 '$AGENT'"
-        echo "有効な職人名: foreman, miller, sifter, gleaner"
+        echo "Error: Invalid agent name '$AGENT'"
+        echo "Valid agent names: foreman, miller, sifter, gleaner"
         exit 1
         ;;
 esac
 
-# ステータス検証（職人ごと）
+# Status validation (per agent)
 case "$AGENT" in
     foreman)
         case "$STATUS" in
             idle|working|waiting_patron) ;;
             *)
-                echo "エラー: Foremanの無効なステータス '$STATUS'"
-                echo "有効なステータス: idle, working, waiting_patron"
+                echo "Error: Invalid Foreman status '$STATUS'"
+                echo "Valid statuses: idle, working, waiting_patron"
                 exit 1
                 ;;
         esac
@@ -84,8 +84,8 @@ case "$AGENT" in
         case "$STATUS" in
             idle|working|blocked) ;;
             *)
-                echo "エラー: Millerの無効なステータス '$STATUS'"
-                echo "有効なステータス: idle, working, blocked"
+                echo "Error: Invalid Miller status '$STATUS'"
+                echo "Valid statuses: idle, working, blocked"
                 exit 1
                 ;;
         esac
@@ -94,8 +94,8 @@ case "$AGENT" in
         case "$STATUS" in
             inactive|idle|reviewing) ;;
             *)
-                echo "エラー: Sifterの無効なステータス '$STATUS'"
-                echo "有効なステータス: inactive, idle, reviewing"
+                echo "Error: Invalid Sifter status '$STATUS'"
+                echo "Valid statuses: inactive, idle, reviewing"
                 exit 1
                 ;;
         esac
@@ -104,8 +104,8 @@ case "$AGENT" in
         case "$STATUS" in
             inactive|idle|researching) ;;
             *)
-                echo "エラー: Gleanerの無効なステータス '$STATUS'"
-                echo "有効なステータス: inactive, idle, researching"
+                echo "Error: Invalid Gleaner status '$STATUS'"
+                echo "Valid statuses: inactive, idle, researching"
                 exit 1
                 ;;
         esac
@@ -114,29 +114,29 @@ esac
 
 STATE_FILE="$MILL_ROOT/state/${AGENT}.yaml"
 
-# ファイル存在チェック
+# File existence check
 if [ ! -f "$STATE_FILE" ]; then
-    echo "エラー: 状態ファイルが見つかりません: $STATE_FILE"
+    echo "Error: State file not found: $STATE_FILE"
     exit 1
 fi
 
-# タイムスタンプ
+# Timestamp
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
 
-# idle系の場合はcurrent_taskとprogressをクリア
+# Clear current_task and progress for idle statuses
 if [ "$STATUS" = "idle" ] || [ "$STATUS" = "inactive" ]; then
     CURRENT_TASK="null"
     PROGRESS=""
 fi
 
-# progressが空の場合の処理（YAMLで空文字列として保存）
+# Handle empty progress (save as empty string in YAML)
 if [ -z "$PROGRESS" ]; then
     PROGRESS_VALUE='""'
 else
     PROGRESS_VALUE="\"$PROGRESS\""
 fi
 
-# YAMLを更新（sedで各フィールドを更新）
+# Update YAML (update each field with sed)
 if [[ "$OSTYPE" == "darwin"* ]]; then
     # macOS
     sed -i '' "s/^status: .*/status: $STATUS/" "$STATE_FILE"
@@ -151,7 +151,7 @@ else
     sed -i "s/^last_updated: .*/last_updated: \"$TIMESTAMP\"/" "$STATE_FILE"
 fi
 
-echo "状態更新完了: $AGENT"
+echo "State updated: $AGENT"
 echo "  status: $STATUS"
 echo "  current_task: $CURRENT_TASK"
 echo "  progress: $PROGRESS"

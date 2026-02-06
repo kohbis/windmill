@@ -1,37 +1,37 @@
 #!/bin/bash
-# complete_task.sh - 仕事完了レポート追記スクリプト
-# 使用者: Foreman
+# complete_task.sh - Task completion report append script
+# User: Foreman
 #
-# 使用例:
-#   ./scripts/agent/complete_task.sh task_xxx "実装完了の概要" "passed"
-#   ./scripts/agent/complete_task.sh task_xxx "バグ修正完了" "passed" "追加の最適化推奨"
+# Examples:
+#   ./scripts/agent/complete_task.sh task_xxx "Implementation complete summary" "passed"
+#   ./scripts/agent/complete_task.sh task_xxx "Bug fix complete" "passed" "Additional optimization recommended"
 
 set -e
 
 MILL_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 
-# ヘルプ表示
+# Display help
 show_help() {
     cat << EOF
-使用方法: complete_task.sh <task_id> "<summary>" "<test_status>" ["<notes>"]
+Usage: complete_task.sh <task_id> "<summary>" "<test_status>" ["<notes>"]
 
-仕事YAMLに完了レポート（resultセクション）を追記し、completedに移動します。
+Appends completion report (result section) to task YAML and moves to completed.
 
-引数:
-  task_id       仕事ID（例: task_20260130_auth）
-  summary       作業概要（必須）
-  test_status   テスト結果: passed, failed, skipped
-  notes         補足事項（オプション）
+Arguments:
+  task_id       Task ID (e.g., task_20260130_auth)
+  summary       Work summary (required)
+  test_status   Test result: passed, failed, skipped
+  notes         Additional notes (optional)
 
-例:
-  complete_task.sh task_20260130_auth "認証機能を実装" "passed"
-  complete_task.sh task_20260130_auth "バグ修正" "passed" "追加の最適化推奨"
-  complete_task.sh task_20260130_auth "調査完了" "skipped" "テスト対象外"
+Examples:
+  complete_task.sh task_20260130_auth "Implemented authentication feature" "passed"
+  complete_task.sh task_20260130_auth "Bug fix" "passed" "Additional optimization recommended"
+  complete_task.sh task_20260130_auth "Research complete" "skipped" "Not subject to testing"
 EOF
     exit 0
 }
 
-# 引数チェック
+# Argument check
 if [ $# -lt 3 ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
     show_help
 fi
@@ -41,18 +41,18 @@ SUMMARY="$2"
 TEST_STATUS="$3"
 NOTES="${4:-}"
 
-# テストステータス検証
+# Test status validation
 case "$TEST_STATUS" in
     passed|failed|skipped)
         ;;
     *)
-        echo "エラー: 無効なテストステータス '$TEST_STATUS'"
-        echo "有効なステータス: passed, failed, skipped"
+        echo "Error: Invalid test status '$TEST_STATUS'"
+        echo "Valid statuses: passed, failed, skipped"
         exit 1
         ;;
 esac
 
-# タスクファイルを探す（in_progressを優先）
+# Find task file (prioritize in_progress)
 TASK_FILE=""
 for dir in in_progress pending; do
     if [ -f "$MILL_ROOT/tasks/$dir/${TASK_ID}.yaml" ]; then
@@ -63,26 +63,26 @@ for dir in in_progress pending; do
 done
 
 if [ -z "$TASK_FILE" ]; then
-    echo "エラー: タスク '$TASK_ID' が見つかりません（in_progress または pending）"
+    echo "Error: Task '$TASK_ID' not found (in_progress or pending)"
     exit 1
 fi
 
-# タイムスタンプ
+# Timestamp
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
 
-# assigned_toを取得
+# Get assigned_to
 ASSIGNED_TO=$(grep "^assigned_to:" "$TASK_FILE" | sed 's/^assigned_to: *//' | tr -d '"')
 [ "$ASSIGNED_TO" = "null" ] && ASSIGNED_TO="miller"
 
-# 既にcompleted_atがあるかチェック
+# Check if completed_at already exists
 if grep -q "^completed_at:" "$TASK_FILE"; then
-    echo "警告: このタスクは既に完了レポートが追記されています"
-    echo "上書きせずに移動のみ行います"
+    echo "Warning: This task already has a completion report appended"
+    echo "Moving only without overwriting"
 else
-    # 完了レポートを追記
+    # Append completion report
     cat >> "$TASK_FILE" << EOF
 
-# --- 完了レポート ---
+# --- Completion Report ---
 completed_at: "$TIMESTAMP"
 completed_by: $ASSIGNED_TO
 result:
@@ -92,7 +92,7 @@ result:
     status: $TEST_STATUS
 EOF
 
-    # notesがある場合は追加
+    # Add notes if present
     if [ -n "$NOTES" ]; then
         cat >> "$TASK_FILE" << EOF
   notes: |
@@ -101,20 +101,20 @@ EOF
     fi
 fi
 
-# statusをcompletedに更新
+# Update status to completed
 if [[ "$OSTYPE" == "darwin"* ]]; then
     sed -i '' "s/^status: .*/status: completed/" "$TASK_FILE"
 else
     sed -i "s/^status: .*/status: completed/" "$TASK_FILE"
 fi
 
-# completedディレクトリに移動
+# Move to completed directory
 DEST_FILE="$MILL_ROOT/tasks/completed/${TASK_ID}.yaml"
 mv "$TASK_FILE" "$DEST_FILE"
 
-echo "完了処理完了: $TASK_ID"
-echo "  概要: $SUMMARY"
-echo "  テスト: $TEST_STATUS"
-echo "  完了者: $ASSIGNED_TO"
-echo "  移動: $FROM_DIR → completed"
-echo "  ファイル: $DEST_FILE"
+echo "Completion processed: $TASK_ID"
+echo "  Summary: $SUMMARY"
+echo "  Tests: $TEST_STATUS"
+echo "  Completed by: $ASSIGNED_TO"
+echo "  Moved: $FROM_DIR → completed"
+echo "  File: $DEST_FILE"
