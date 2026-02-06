@@ -140,4 +140,4 @@ For detailed specifications and settings, see [AGENTS.md](AGENTS.md).
 
 ## License
 
-MIT License
+MIT License, see [LICENSE](LICENSE) for details.
