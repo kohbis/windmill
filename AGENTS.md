@@ -175,13 +175,13 @@ tmux send-keys -t windmill:windmill.4 'claude --dangerously-skip-permissions' En
 #### For OpenAI Codex CLI
 ```bash
 # Miller (Implementer)
-tmux send-keys -t windmill:windmill.2 'codex --full-auto' Enter
+tmux send-keys -t windmill:windmill.2 'codex --sandbox workspace-write --ask-for-approval never' Enter
 
 # Gleaner (Researcher)
-tmux send-keys -t windmill:windmill.3 'codex --full-auto' Enter
+tmux send-keys -t windmill:windmill.3 'codex --sandbox workspace-write --ask-for-approval never' Enter
 
 # Sifter (Reviewer)
-tmux send-keys -t windmill:windmill.4 'codex --full-auto' Enter
+tmux send-keys -t windmill:windmill.4 'codex --sandbox workspace-write --ask-for-approval never' Enter
 ```
 
 #### For GitHub Copilot CLI
@@ -423,22 +423,9 @@ claude --dangerously-skip-permissions
 # Normal (suggestion mode)
 codex
 
-# Automatic execution mode (execute without approval)
-codex --full-auto
+# Automatic execution mode (sandbox enabled, no approval prompts)
+codex --sandbox workspace-write --ask-for-approval never
 ```
-
-**About configuration files (codex.toml):**
-
-With Codex CLI, even with the `--full-auto` option alone, it may request permission for file modifications or script execution.
-To avoid this, `codex.toml` is placed in each directory:
-
-- `codex.toml` - Project root (global settings)
-- `agents/foreman/codex.toml` - For Foreman (only management operations allowed)
-- `agents/miller/codex.toml` - For Miller (implementation operations allowed)
-- `agents/gleaner/codex.toml` - For Gleaner (research operations allowed)
-- `agents/sifter/codex.toml` - For Sifter (review operations allowed)
-
-These configuration files define allowed commands in the `[auto_approve]` section.
 
 ### GitHub Copilot CLI
 ```bash

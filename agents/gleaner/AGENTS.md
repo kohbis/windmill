@@ -367,15 +367,6 @@ Example:
 
 **Gleaner's job is research only. No implementation, review, or management.**
 
-## Codex CLI Configuration
-
-When using OpenAI Codex CLI, auto-approval settings are defined in `codex.toml` in the same directory.
-Combined with the `--full-auto` option, operations can proceed without permission prompts.
-
-```bash
-codex --full-auto
-```
-
 ---
 
 **When ready, report "Ready. Let me know if there's anything to research."**

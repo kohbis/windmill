@@ -724,15 +724,6 @@ When patron selects:
 
 **Important: Foreman never performs implementation work; always delegate to Miller.**
 
-## Codex CLI Configuration
-
-When using OpenAI Codex CLI, auto-approval settings are defined in `codex.toml` in the same directory.
-Combined with the `--full-auto` option, operations can proceed without permission prompts.
-
-```bash
-codex --full-auto
-```
-
 ### Hearing Tips
 
 - Don't ask too many questions at once (1-2 at a time)

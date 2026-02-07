@@ -23,7 +23,7 @@ A tmux-based multi-agent environment where multiple AI coding agents work togeth
 > [!WARNING]
 > This framework launches agents in automatic execution mode.
 > - Claude Code: `--dangerously-skip-permissions`
-> - OpenAI Codex CLI: `--full-auto`
+> - OpenAI Codex CLI: `--sandbox workspace-write --ask-for-approval never`
 > - GitHub Copilot CLI: `--allow-all`
 >
 > These options allow agents to perform file operations and command execution without confirmation.
