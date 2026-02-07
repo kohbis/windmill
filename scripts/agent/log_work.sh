@@ -57,34 +57,40 @@ fi
 # Timestamp
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
 
-# Create work_log entry
-if [ -n "$DETAILS" ]; then
-    LOG_ENTRY="  - timestamp: \"$TIMESTAMP\"
-    action: \"$ACTION\"
-    details: \"$DETAILS\""
-else
-    LOG_ENTRY="  - timestamp: \"$TIMESTAMP\"
-    action: \"$ACTION\""
-fi
+# Escape for safe double-quoted YAML scalar.
+yaml_escape() {
+    printf '%s' "$1" | perl -0pe 's/\\/\\\\/g; s/"/\\\"/g; s/\r/\\r/g; s/\n/\\n/g'
+}
+
+ACTION_ESCAPED=$(yaml_escape "$ACTION")
+DETAILS_ESCAPED=$(yaml_escape "$DETAILS")
 
 # Append work_log entry (using awk for both empty and existing cases)
 TEMP_FILE=$(mktemp)
 if grep -q "^work_log: \[\]" "$TASK_FILE"; then
     # Convert empty array to expanded format
-    awk -v entry="$LOG_ENTRY" '
+    awk -v ts="$TIMESTAMP" -v action="$ACTION_ESCAPED" -v details="$DETAILS_ESCAPED" '
         /^work_log: \[\]/ {
             print "work_log:"
-            print entry
+            print "  - timestamp: \"" ts "\""
+            print "    action: \"" action "\""
+            if (details != "") {
+                print "    details: \"" details "\""
+            }
             next
         }
         { print }
     ' "$TASK_FILE" > "$TEMP_FILE"
 else
     # Append to existing work_log
-    awk -v entry="$LOG_ENTRY" '
+    awk -v ts="$TIMESTAMP" -v action="$ACTION_ESCAPED" -v details="$DETAILS_ESCAPED" '
         /^work_log:/ {
             print
-            print entry
+            print "  - timestamp: \"" ts "\""
+            print "    action: \"" action "\""
+            if (details != "") {
+                print "    details: \"" details "\""
+            }
             next
         }
         { print }
