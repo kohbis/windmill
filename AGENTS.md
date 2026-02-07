@@ -165,10 +165,10 @@ When you run start.sh:
 # Miller (Implementer)
 tmux send-keys -t windmill:windmill.2 'claude --dangerously-skip-permissions' Enter
 
-# Gleaner (Researcher) or ./scripts/start_gleaner.sh
+# Gleaner (Researcher)
 tmux send-keys -t windmill:windmill.3 'claude --dangerously-skip-permissions' Enter
 
-# Sifter (Reviewer) or ./scripts/start_sifter.sh
+# Sifter (Reviewer)
 tmux send-keys -t windmill:windmill.4 'claude --dangerously-skip-permissions' Enter
 ```
 
@@ -356,12 +356,6 @@ result:
 - When understanding existing code structure is needed
 - When investigating error causes
 
-**How to start:**
-```bash
-./scripts/start_gleaner.sh  # Auto-starts Claude in Pane 3
-# Wait a few seconds before sending instructions
-```
-
 **Request format:**
 ```
 [Research Request] task_20260130_state_mgmt: Please research React state management methods.
@@ -374,12 +368,6 @@ Research points: Redux vs Context API comparison, recommended use cases
 - When Miller reports completion and code review is needed
 - When patron requests quality confirmation
 - After complex changes or important feature implementation
-
-**How to start:**
-```bash
-./scripts/start_sifter.sh  # Auto-starts Claude in Pane 4
-# Wait a few seconds before sending instructions
-```
 
 **Request format:**
 ```
