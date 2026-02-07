@@ -169,5 +169,5 @@ echo "Status: $INITIAL_STATUS"
 if [ "$INITIAL_STATUS" = "planning" ]; then
     echo ""
     echo "Next step: Send plan request to Gleaner"
-    echo "  send_to.sh gleaner \"[Plan Request] ${TASK_ID}: ...\""
+    echo "  send_to.sh gleaner \"[FOREMAN:PLAN_REQUEST] ${TASK_ID}: ...\""
 fi

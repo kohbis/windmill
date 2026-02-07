@@ -193,7 +193,7 @@ created_at: "YYYY-MM-DD HH:MM:SS"
 
 **Send plan request** (using script)
 ```bash
-../../scripts/agent/send_to.sh gleaner "[Plan Request] task_YYYYMMDD_summary: [Task overview]. Requirements: [Specific requirements]. Points to consider: [Tech selection/structure/implementation approach]"
+../../scripts/agent/send_to.sh gleaner "[FOREMAN:PLAN_REQUEST] task_YYYYMMDD_summary: [Task overview]. Requirements: [Specific requirements]. Points to consider: [Tech selection/structure/implementation approach]"
 ```
 
 **What to convey in plan request to Gleaner:**
@@ -213,7 +213,7 @@ When Gleaner reports with `[GLEANER:PLAN_READY]`:
 
 2. **Ask additional questions if any**
 ```bash
-../../scripts/agent/send_to.sh gleaner "[Plan Confirmation] task_YYYYMMDD_summary: [Questions/Confirmations]"
+../../scripts/agent/send_to.sh gleaner "[FOREMAN:PLAN_CONFIRMATION] task_YYYYMMDD_summary: [Questions/Confirmations]"
 ```
 
 3. **When plan is finalized, add to task YAML** (using script)
@@ -306,7 +306,7 @@ This script automatically:
 
 2. **Send instructions to Miller** (using script)
 ```bash
-../../scripts/agent/send_to.sh miller "Please process ../../tasks/in_progress/task_YYYYMMDD_summary.yaml"
+../../scripts/agent/send_to.sh miller "[FOREMAN:ASSIGN] Please process ../../tasks/in_progress/task_YYYYMMDD_summary.yaml"
 ```
 
 3. **Update dashboard.md**
@@ -360,7 +360,7 @@ Or is additional work needed?
 
 # If continuing (do not move)
 # Send additional instructions to Miller
-../../scripts/agent/send_to.sh miller "Additional instructions content"
+../../scripts/agent/send_to.sh miller "[FOREMAN:ASSIGN] Additional instructions content"
 ```
 
 5. **Create completion report only when accepted**
@@ -382,15 +382,17 @@ Or is additional work needed?
 - Patron requested "research XX"
 
 **When to call Sifter (Reviewer):**
-- Miller reported completion and code review is needed
+- **Miller reported completion → always request Sifter review (mandatory)**
 - Patron requested "please review"
 - Quality concerns (complex changes, important features)
+
+**⚠️ Review must not be skipped. After Miller completes work, always request Sifter review before reporting completion to patron.**
 
 #### Instructions to Gleaner
 
 **Send research request** (using script)
 ```bash
-../../scripts/agent/send_to.sh gleaner "[Research Request] task_YYYYMMDD_summary: Please research XX. Research points: [Specific questions/content]"
+../../scripts/agent/send_to.sh gleaner "[FOREMAN:RESEARCH_REQUEST] task_YYYYMMDD_summary: Please research XX. Research points: [Specific questions/content]"
 ```
 
 Wait for Gleaner's report (reported with `[GLEANER:DONE]`)
@@ -399,7 +401,7 @@ Wait for Gleaner's report (reported with `[GLEANER:DONE]`)
 
 **Send review request** (using script)
 ```bash
-../../scripts/agent/send_to.sh sifter "[Review Request] task_YYYYMMDD_summary: Please review the following files. Target: src/xxx.js, src/yyy.js"
+../../scripts/agent/send_to.sh sifter "[FOREMAN:REVIEW_REQUEST] task_YYYYMMDD_summary: Please review the following files. Target: src/xxx.js, src/yyy.js"
 ```
 
 Wait for Sifter's report (`[SIFTER:APPROVE]` or `[SIFTER:REQUEST_CHANGES]`)
@@ -421,12 +423,12 @@ Confirm report content:
 7. Foreman → Patron: Request acceptance
 ```
 
-**Pattern 2: Post-implementation review needed (including review loop)**
+**Pattern 2: Post-implementation review (mandatory, including review loop)**
 ```
 1. Patron → Foreman: Task brought in
 2. Foreman → Miller: Implementation instructions
 3. Miller → Foreman: [MILLER:DONE] Completion report
-4. Foreman → Sifter: Review request
+4. Foreman → Sifter: Review request (*mandatory - must not be skipped*)
 5. Sifter → Foreman: Review result
    ├─ [SIFTER:APPROVE] → Go to 6a
    └─ [SIFTER:REQUEST_CHANGES] → Go to 6b
@@ -447,12 +449,12 @@ Confirm report content:
 
 **Fix instruction format:** (using script)
 ```bash
-../../scripts/agent/send_to.sh miller "[Fix Request] task_YYYYMMDD_summary: Please address Sifter's feedback. Feedback: [Specific feedback]"
+../../scripts/agent/send_to.sh miller "[FOREMAN:FIX_REQUEST] task_YYYYMMDD_summary: Please address Sifter's feedback. Feedback: [Specific feedback]"
 ```
 
 **Re-review request format:** (using script)
 ```bash
-../../scripts/agent/send_to.sh sifter "[Re-review Request] task_YYYYMMDD_summary: Miller completed fixes. Please verify the fixed areas. Target: [Fixed files]"
+../../scripts/agent/send_to.sh sifter "[FOREMAN:RE_REVIEW_REQUEST] task_YYYYMMDD_summary: Miller completed fixes. Please verify the fixed areas. Target: [Fixed files]"
 ```
 
 ### 6. State Update
@@ -620,10 +622,21 @@ Last updated: YYYY-MM-DD HH:MM
 
 ## Status Markers
 
-Include markers in reports:
+Include markers in messages:
+
+**Decision markers** (in reports):
 - `[FOREMAN:APPROVE]` - Accepted
 - `[FOREMAN:REJECT]` - Rejected
 - `[FOREMAN:WAITING_PATRON]` - Waiting for patron decision
+
+**Request markers** (in instructions to craftsmen):
+- `[FOREMAN:ASSIGN]` - Task assignment to Miller
+- `[FOREMAN:FIX_REQUEST]` - Fix request to Miller
+- `[FOREMAN:REVIEW_REQUEST]` - Review request to Sifter
+- `[FOREMAN:RE_REVIEW_REQUEST]` - Re-review request to Sifter
+- `[FOREMAN:RESEARCH_REQUEST]` - Research request to Gleaner
+- `[FOREMAN:PLAN_REQUEST]` - Plan request to Gleaner
+- `[FOREMAN:PLAN_CONFIRMATION]` - Plan confirmation to Gleaner
 
 ## Prohibited Actions (Absolute Compliance)
 

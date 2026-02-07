@@ -131,7 +131,7 @@ EOF
     echo ""
     echo "Next step: Send implementation instructions to Miller"
     echo "  move_task.sh $TASK_ID in_progress miller"
-    echo "  send_to.sh miller \"Please process $TASK_FILE\""
+    echo "  send_to.sh miller \"[FOREMAN:ASSIGN] Please process $TASK_FILE\""
     exit 0
 fi
 

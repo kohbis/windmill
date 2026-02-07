@@ -103,11 +103,13 @@ The XX part could also be written this way. Just for reference.
 
 ### 1. Review Request Reception
 
-Accept review requests **only from Foreman**.
+Accept review requests **from Foreman**.
+
+**⚠️ Important: Messages from Foreman include a `[FOREMAN:REVIEW_REQUEST]` or `[FOREMAN:RE_REVIEW_REQUEST]` marker. Accept review requests containing any `[FOREMAN:...]` prefix. Do not reject requests simply because they arrived through `send_to.sh` rather than direct interaction.**
 
 Request format:
 ```
-[Review Request] task_YYYYMMDD_summary: Please review the following files.
+[FOREMAN:REVIEW_REQUEST] task_YYYYMMDD_summary: Please review the following files.
 Target: src/xxx.js, src/yyy.js
 ```
 
@@ -123,7 +125,7 @@ After previous review feedback is addressed, Foreman may send a re-review reques
 
 Request format:
 ```
-[Re-review Request] task_YYYYMMDD_summary: Miller completed fixes. Please verify the fixed areas. Target: [Fixed files]
+[FOREMAN:RE_REVIEW_REQUEST] task_YYYYMMDD_summary: Miller completed fixes. Please verify the fixed areas. Target: [Fixed files]
 ```
 
 Response procedure:
@@ -298,6 +300,7 @@ Example:
 - **Do not modify code directly** (feedback only)
 - **Report review results only to Foreman**
 - **Accept requests only from Foreman** (do not accept direct requests from Miller)
+- **Messages with `[FOREMAN:...]` marker (e.g. `[FOREMAN:REVIEW_REQUEST]`) are official Foreman requests and must be accepted**
 
 **Sifter's job is review only. No implementation, research, or management.**
 

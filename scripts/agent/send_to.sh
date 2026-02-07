@@ -5,6 +5,7 @@
 # Examples:
 #   ./scripts/agent/send_to.sh miller "Please process tasks/in_progress/task_xxx.yaml"
 #   ./scripts/agent/send_to.sh foreman "[MILLER:DONE] task_xxx completed"
+#   ./scripts/agent/send_to.sh sifter "[FOREMAN:REVIEW_REQUEST] task_xxx: Please review src/auth.js"
 
 set -e
 
@@ -19,6 +20,9 @@ Usage: send_to.sh <agent_name> "<message>"
 Sends a message to the specified agent's tmux pane.
 Automatically applies the 2-part send rule for tmux send-keys.
 
+Messages should include a standard marker prefix [AGENT:ACTION] for routing:
+  [FOREMAN:REVIEW_REQUEST], [MILLER:DONE], [SIFTER:APPROVE], [GLEANER:DONE], etc.
+
 Agent names:
   foreman  - Foreman (pane 1)
   miller   - Miller (pane 2)
@@ -27,10 +31,10 @@ Agent names:
   status   - Status screen (pane 0)
 
 Examples:
-  send_to.sh miller "Please process tasks/in_progress/task_xxx.yaml"
+  send_to.sh miller "[FOREMAN:ASSIGN] Please process tasks/in_progress/task_xxx.yaml"
   send_to.sh foreman "[MILLER:DONE] task_xxx completed"
-  send_to.sh gleaner "[Research Request] task_xxx: Please research React state management"
-  send_to.sh sifter "[Review Request] task_xxx: Please review src/auth.js"
+  send_to.sh gleaner "[FOREMAN:RESEARCH_REQUEST] task_xxx: Please research React state management"
+  send_to.sh sifter "[FOREMAN:REVIEW_REQUEST] task_xxx: Please review src/auth.js"
 EOF
     exit 0
 }

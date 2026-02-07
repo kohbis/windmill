@@ -19,7 +19,7 @@ Metaphor:
 |------|------|----------------|--------------|
 | Manager | Foreman | Task decomposition, progress monitoring, patron interaction (never implements) | Always |
 | Implementer | Miller | Coding and implementation (only acts on Foreman instructions) | Always |
-| Reviewer | Sifter | Code review, quality checks | On-demand |
+| Reviewer | Sifter | Code review, quality checks | Always (mandatory review) |
 | Researcher | Gleaner | Planning, research, info gathering | Always |
 
 ### Role Division (What each can do)
@@ -194,7 +194,7 @@ Only Foreman moves task files between `pending/`, `in_progress/`, `completed/`, 
 3. Foreman → Patron (plan approval)
 4. Foreman → Miller (implement)
 5. Miller → Foreman (completion)
-6. Optional: Foreman → Sifter (review)
+6. Foreman → Sifter (review) *mandatory*
 7. Foreman → Patron (accept / redo / suspend)
 8. If redo: Foreman → Miller (iterate), repeat review/accept loop as needed
 
@@ -202,13 +202,13 @@ Only Foreman moves task files between `pending/`, `in_progress/`, `completed/`, 
 
 Gleaner (Researcher) request:
 ```
-[Research Request] task_20260130_state_mgmt: Please research React state management methods.
+[FOREMAN:RESEARCH_REQUEST] task_20260130_state_mgmt: Please research React state management methods.
 Research points: Redux vs Context API comparison, recommended use cases
 ```
 
 Sifter (Reviewer) request:
 ```
-[Review Request] task_20260130_auth: Please review the following files.
+[FOREMAN:REVIEW_REQUEST] task_20260130_auth: Please review the following files.
 Target: src/auth.js, src/middleware.js
 ```
 
@@ -218,6 +218,13 @@ Target: src/auth.js, src/middleware.js
 | Miller | `[MILLER:DONE]` | Work completed |
 | Miller | `[MILLER:BLOCKED]` | Blocked |
 | Foreman | `[FOREMAN:APPROVE]` | Accepted |
+| Foreman | `[FOREMAN:ASSIGN]` | Task assignment to Miller |
+| Foreman | `[FOREMAN:FIX_REQUEST]` | Fix request to Miller |
+| Foreman | `[FOREMAN:REVIEW_REQUEST]` | Review request to Sifter |
+| Foreman | `[FOREMAN:RE_REVIEW_REQUEST]` | Re-review request to Sifter |
+| Foreman | `[FOREMAN:RESEARCH_REQUEST]` | Research request to Gleaner |
+| Foreman | `[FOREMAN:PLAN_REQUEST]` | Plan request to Gleaner |
+| Foreman | `[FOREMAN:PLAN_CONFIRMATION]` | Plan confirmation to Gleaner |
 | Sifter | `[SIFTER:APPROVE]` | Review passed |
 | Sifter | `[SIFTER:REQUEST_CHANGES]` | Changes requested |
 | Sifter | `[SIFTER:COMMENT]` | Comment |
