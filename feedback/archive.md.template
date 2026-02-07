@@ -7,7 +7,7 @@ Accumulates addressed feedback.
 <!-- Format example:
 ## YYYY-MM-DD
 
-### [task_YYYYMMDD_summary] Task title
+### [YYYYMMDD_slug_slug_slug] Task title
 - What went well:
 - Areas for improvement:
 - Other:

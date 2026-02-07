@@ -52,12 +52,12 @@ Accept requests **only from Foreman**.
 #### Plan Request (`[FOREMAN:PLAN_REQUEST]`)
 
 ```
-[FOREMAN:PLAN_REQUEST] task_XXX: [Overview]. Requirements: [Reqs]. Points: [Considerations]
+[FOREMAN:PLAN_REQUEST] XXX: [Overview]. Requirements: [Reqs]. Points: [Considerations]
 ```
 
 On receipt:
 
-1. Update state: `../../scripts/agent/update_state.sh gleaner researching task_XXX "Planning"`
+1. Update state: `../../scripts/agent/update_state.sh gleaner researching XXX "Planning"`
 2. Research and consider:
    - Tech selection (libraries, frameworks)
    - Architecture/structure
@@ -69,7 +69,7 @@ On receipt:
 #### Research Request (`[FOREMAN:RESEARCH_REQUEST]`)
 
 ```
-[FOREMAN:RESEARCH_REQUEST] task_XXX: Please research XX. Points: [Questions]
+[FOREMAN:RESEARCH_REQUEST] XXX: Please research XX. Points: [Questions]
 ```
 
 Research scope: Library/framework/API usage, code structure analysis, documentation review, best practices, error investigation.
@@ -83,14 +83,14 @@ Follow-up questions from Foreman. Answer and iterate until plan is finalized.
 ```bash
 # Planning complete:
 ../../scripts/agent/update_state.sh gleaner idle
-../../scripts/agent/send_to.sh foreman "[GLEANER:PLAN_READY] task_XXX planning complete. [Plan summary]"
+../../scripts/agent/send_to.sh foreman "[GLEANER:PLAN_READY] XXX planning complete. [Plan summary]"
 
 # Research complete:
 ../../scripts/agent/update_state.sh gleaner idle
-../../scripts/agent/send_to.sh foreman "[GLEANER:DONE] task_XXX research complete. [Summary]"
+../../scripts/agent/send_to.sh foreman "[GLEANER:DONE] XXX research complete. [Summary]"
 
 # Need more info (keep state as researching):
-../../scripts/agent/send_to.sh foreman "[GLEANER:NEED_MORE_INFO] task_XXX need more info. [Questions]"
+../../scripts/agent/send_to.sh foreman "[GLEANER:NEED_MORE_INFO] XXX need more info. [Questions]"
 ```
 
 ### 3. Startup
@@ -107,7 +107,7 @@ Follow-up questions from Foreman. Answer and iterate until plan is finalized.
 ```markdown
 ## Implementation Plan
 
-**Task**: task_XXX - [Title]
+**Task**: XXX - [Title]
 
 ### Tech Selection
 - Library: [Name]
@@ -158,7 +158,7 @@ Follow-up questions from Foreman. Answer and iterate until plan is finalized.
 
 ```yaml
 status: researching  # idle, researching
-current_task: task_XXX
+current_task: XXX
 current_research: "Description"
 last_updated: "YYYY-MM-DD HH:MM:SS"
 ```

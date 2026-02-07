@@ -3,8 +3,8 @@
 # User: Foreman, Miller
 #
 # Examples:
-#   ./scripts/agent/log_work.sh task_xxx "Started implementation"
-#   ./scripts/agent/log_work.sh task_xxx "Work complete" "All tests passed"
+#   ./scripts/agent/log_work.sh XXX "Started implementation"
+#   ./scripts/agent/log_work.sh XXX "Work complete" "All tests passed"
 
 set -e
 
@@ -18,15 +18,15 @@ Usage: log_work.sh <task_id> "<action>" ["<details>"]
 Appends an entry to the work_log in task YAML.
 
 Arguments:
-  task_id   Task ID (e.g., task_20260130_auth)
+  task_id   Task ID (e.g., 20260130_impl_auth_feat)
   action    Description of work performed (required)
   details   Detailed information (optional)
 
 Examples:
-  log_work.sh task_20260130_auth "Started implementation"
-  log_work.sh task_20260130_auth "Work complete" "All tests passed"
-  log_work.sh task_20260130_auth "Addressed review feedback" "Fixed variable names"
-  log_work.sh task_20260130_auth "Blocked" "Dependency library version issue"
+  log_work.sh 20260130_impl_auth_feat "Started implementation"
+  log_work.sh 20260130_impl_auth_feat "Work complete" "All tests passed"
+  log_work.sh 20260130_impl_auth_feat "Addressed review feedback" "Fixed variable names"
+  log_work.sh 20260130_impl_auth_feat "Blocked" "Dependency library version issue"
 EOF
     exit 0
 }

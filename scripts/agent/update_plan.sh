@@ -3,8 +3,8 @@
 # User: Foreman (used after receiving plan report from Gleaner)
 #
 # Examples:
-#   ./scripts/agent/update_plan.sh task_20260130_auth "React" "Lightweight and proven" "small"
-#   ./scripts/agent/update_plan.sh --approve task_20260130_auth
+#   ./scripts/agent/update_plan.sh 20260130_impl_auth_feat "React" "Lightweight and proven" "small"
+#   ./scripts/agent/update_plan.sh --approve 20260130_impl_auth_feat
 
 set -e
 
@@ -36,13 +36,13 @@ Sizes:
 
 Examples:
   # Add plan
-  update_plan.sh task_20260130_auth "lodash" "Lightweight and proven" "small" "Create util" "Add tests"
+  update_plan.sh 20260130_impl_auth_feat "lodash" "Lightweight and proven" "small" "Create util" "Add tests"
 
   # With risks
-  update_plan.sh task_20260130_auth "React" "Standard" "medium" "Create component" --risk "CSS conflict" "No IE support"
+  update_plan.sh 20260130_impl_auth_feat "React" "Standard" "medium" "Create component" --risk "CSS conflict" "No IE support"
 
   # Patron approval
-  update_plan.sh --approve task_20260130_auth
+  update_plan.sh --approve 20260130_impl_auth_feat
 EOF
     exit 0
 }

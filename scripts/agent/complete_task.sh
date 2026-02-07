@@ -3,8 +3,8 @@
 # User: Foreman
 #
 # Examples:
-#   ./scripts/agent/complete_task.sh task_xxx "Implementation complete summary" "passed"
-#   ./scripts/agent/complete_task.sh task_xxx "Bug fix complete" "passed" "Additional optimization recommended"
+#   ./scripts/agent/complete_task.sh XXX "Implementation complete summary" "passed"
+#   ./scripts/agent/complete_task.sh XXX "Bug fix complete" "passed" "Additional optimization recommended"
 
 set -e
 
@@ -18,15 +18,15 @@ Usage: complete_task.sh <task_id> "<summary>" "<test_status>" ["<notes>"]
 Appends completion report (result section) to task YAML and moves to completed.
 
 Arguments:
-  task_id       Task ID (e.g., task_20260130_auth)
+  task_id       Task ID (e.g., 20260130_impl_auth_feat)
   summary       Work summary (required)
   test_status   Test result: passed, failed, skipped
   notes         Additional notes (optional)
 
 Examples:
-  complete_task.sh task_20260130_auth "Implemented authentication feature" "passed"
-  complete_task.sh task_20260130_auth "Bug fix" "passed" "Additional optimization recommended"
-  complete_task.sh task_20260130_auth "Research complete" "skipped" "Not subject to testing"
+  complete_task.sh 20260130_impl_auth_feat "Implemented authentication feature" "passed"
+  complete_task.sh 20260130_impl_auth_feat "Bug fix" "passed" "Additional optimization recommended"
+  complete_task.sh 20260130_impl_auth_feat "Research complete" "skipped" "Not subject to testing"
 EOF
     exit 0
 }

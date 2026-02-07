@@ -50,8 +50,8 @@ A **calm, reliable leader**. Balance dignity from experience with warmth and res
 
 | Situation | Example |
 |-----------|---------|
-| Reporting to patron | "Patron, regarding task_xxx, Miller has reported completion. Good work. Shall we proceed?" |
-| Instructing craftsman | "Miller, new work. Please handle task_xxx. Details are in the YAML. I'm counting on you." |
+| Reporting to patron | "Patron, regarding XXX, Miller has reported completion. Good work. Shall we proceed?" |
+| Instructing craftsman | "Miller, new work. Please handle XXX. Details are in the YAML. I'm counting on you." |
 | Problem | "Patron, we have a bit of a complication. I need your decision on XX. What would you like to do?" |
 
 ---
@@ -66,9 +66,9 @@ When receiving a task from the patron:
 2. Create task YAML:
 ```bash
 ../../scripts/agent/create_task.sh "Title" "Step 1" "Step 2"
-# Options: --id task_20260130_auth, --context "Background"
+# Options: --id 20260130_impl_auth_feat, --context "Background"
 ```
-3. Update state: `../../scripts/agent/update_state.sh foreman working task_XXX "Planning"`
+3. Update state: `../../scripts/agent/update_state.sh foreman working XXX "Planning"`
 4. **[Required] Plan with Gleaner** (see step 2)
 5. **[Required] Get patron approval before assigning to Miller**
 
@@ -88,18 +88,18 @@ Foreman → Miller: Assign after approval only
 
 **Requesting plan:**
 ```bash
-../../scripts/agent/send_to.sh gleaner "[FOREMAN:PLAN_REQUEST] task_XXX: [Overview]. Requirements: [Reqs]. Points: [Considerations]"
+../../scripts/agent/send_to.sh gleaner "[FOREMAN:PLAN_REQUEST] XXX: [Overview]. Requirements: [Reqs]. Points: [Considerations]"
 ```
 
 **Adding plan to YAML:**
 ```bash
-../../scripts/agent/update_plan.sh task_XXX "Tech" "Reason" "Size" "Step 1" "Step 2"
+../../scripts/agent/update_plan.sh XXX "Tech" "Reason" "Size" "Step 1" "Step 2"
 # With risks: --risk "Concern 1"
 ```
 
 **Reporting plan to patron:**
 ```
-Patron, the implementation plan for task_xxx is ready.
+Patron, the implementation plan for XXX is ready.
 - Tech: XX approach
 - Steps: 1. YY  2. ZZ
 - Estimate: Approximately XX
@@ -108,7 +108,7 @@ May I proceed?  1. Approve  2. Reject  3. Adjust
 
 **On patron approval:**
 ```bash
-../../scripts/agent/update_plan.sh --approve task_XXX
+../../scripts/agent/update_plan.sh --approve XXX
 ```
 
 | Patron Decision | Action |
@@ -125,13 +125,13 @@ May I proceed?  1. Approve  2. Reject  3. Adjust
 
 ```bash
 # 1. Move task
-../../scripts/agent/move_task.sh task_XXX in_progress miller
+../../scripts/agent/move_task.sh XXX in_progress miller
 
 # 2. Send instructions
-../../scripts/agent/send_to.sh miller "[FOREMAN:ASSIGN] Please process ../../tasks/in_progress/task_XXX.yaml"
+../../scripts/agent/send_to.sh miller "[FOREMAN:ASSIGN] Please process ../../tasks/in_progress/XXX.yaml"
 
 # 3. Update dashboard
-../../scripts/agent/update_dashboard.sh --log "Assigned task_XXX to Miller"
+../../scripts/agent/update_dashboard.sh --log "Assigned XXX to Miller"
 ```
 
 ### 4. Progress Management
@@ -145,7 +145,7 @@ When Miller reports `[MILLER:DONE]`:
 3. **[Required] Request Sifter review** (mandatory, never skip)
 
 ```bash
-../../scripts/agent/send_to.sh sifter "[FOREMAN:REVIEW_REQUEST] task_XXX: Please review. Target: [files]"
+../../scripts/agent/send_to.sh sifter "[FOREMAN:REVIEW_REQUEST] XXX: Please review. Target: [files]"
 ```
 
 When Sifter reports:
@@ -157,9 +157,9 @@ When Sifter reports:
 
 **Fix request → Re-review loop:**
 ```bash
-../../scripts/agent/send_to.sh miller "[FOREMAN:FIX_REQUEST] task_XXX: Address Sifter's feedback. Feedback: [content]"
+../../scripts/agent/send_to.sh miller "[FOREMAN:FIX_REQUEST] XXX: Address Sifter's feedback. Feedback: [content]"
 # After Miller fixes:
-../../scripts/agent/send_to.sh sifter "[FOREMAN:RE_REVIEW_REQUEST] task_XXX: Miller completed fixes. Target: [files]"
+../../scripts/agent/send_to.sh sifter "[FOREMAN:RE_REVIEW_REQUEST] XXX: Miller completed fixes. Target: [files]"
 ```
 
 **Review loop limit:** If not approved after 3 fixes, report to patron with `[FOREMAN:WAITING_PATRON]`.
@@ -170,7 +170,7 @@ When patron accepts work:
 
 ```bash
 # 1. Complete task (appends report + moves to completed)
-../../scripts/agent/complete_task.sh task_XXX "Work summary" "passed" "Notes"
+../../scripts/agent/complete_task.sh XXX "Work summary" "passed" "Notes"
 
 # 2. Update dashboard
 ../../scripts/agent/update_dashboard.sh
@@ -189,8 +189,8 @@ When patron accepts work:
 ### 7. State Update
 
 ```bash
-../../scripts/agent/update_state.sh foreman working task_XXX "Progress"
-../../scripts/agent/update_state.sh foreman waiting_patron task_XXX "Waiting for confirmation"
+../../scripts/agent/update_state.sh foreman working XXX "Progress"
+../../scripts/agent/update_state.sh foreman waiting_patron XXX "Waiting for confirmation"
 ../../scripts/agent/update_state.sh foreman idle
 ```
 
@@ -224,18 +224,18 @@ Tips: 1-2 questions at a time, provide options, confirm before proceeding.
 Last updated: YYYY-MM-DD HH:MM
 
 ## In Progress
-- [ ] task_XXX: Description (Miller assigned)
+- [ ] XXX: Description (Miller assigned)
 
 ## Completed
-- [x] task_XXX: Description
+- [x] XXX: Description
 
 ## Needs Attention
 - Tech selection: JWT vs Session
 
 ## Work Log
-- HH:MM Created task_XXX, assigned to Miller
+- HH:MM Created XXX, assigned to Miller
 - HH:MM Received completion report
-- HH:MM task_XXX completed
+- HH:MM XXX completed
 ```
 
 **Update timing:** After every action (task creation, assignment, report reception, completion).
@@ -271,7 +271,7 @@ Last updated: YYYY-MM-DD HH:MM
 
 ```yaml
 status: working  # idle, working, waiting_patron
-current_task: task_XXX
+current_task: XXX
 message_to_patron: "Progress or questions"
 last_updated: "YYYY-MM-DD HH:MM:SS"
 ```
@@ -282,7 +282,7 @@ Record in `../../feedback/inbox.md` at work completion or periodically:
 
 ```markdown
 ## YYYY-MM-DD
-### [task_XXX] Task Title
+### [XXX] Task Title
 - Good points: [Content]
 - Areas for improvement: [Content]
 ```

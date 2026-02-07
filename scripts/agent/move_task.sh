@@ -3,9 +3,9 @@
 # User: Foreman
 #
 # Examples:
-#   ./scripts/agent/move_task.sh task_20260130_auth in_progress miller
-#   ./scripts/agent/move_task.sh task_20260130_auth completed
-#   ./scripts/agent/move_task.sh task_20260130_auth failed
+#   ./scripts/agent/move_task.sh 20260130_impl_auth_feat in_progress miller
+#   ./scripts/agent/move_task.sh 20260130_impl_auth_feat completed
+#   ./scripts/agent/move_task.sh 20260130_impl_auth_feat failed
 
 set -e
 
@@ -19,15 +19,15 @@ Usage: move_task.sh <task_id> <to_status> [assigned_to]
 Transitions (moves) a task to the specified status.
 
 Arguments:
-  task_id      Task ID (e.g., task_20260130_auth)
+  task_id      Task ID (e.g., 20260130_impl_auth_feat)
   to_status    Destination status: pending, in_progress, completed, failed
   assigned_to  Assignee (required for in_progress): miller, sifter, gleaner
 
 Examples:
-  move_task.sh task_20260130_auth in_progress miller  # Assign to Miller
-  move_task.sh task_20260130_auth completed           # Complete
-  move_task.sh task_20260130_auth failed              # Suspend/On hold
-  move_task.sh task_20260130_auth pending             # Return to pending
+  move_task.sh 20260130_impl_auth_feat in_progress miller  # Assign to Miller
+  move_task.sh 20260130_impl_auth_feat completed           # Complete
+  move_task.sh 20260130_impl_auth_feat failed              # Suspend/On hold
+  move_task.sh 20260130_impl_auth_feat pending             # Return to pending
 EOF
     exit 0
 }

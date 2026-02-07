@@ -36,9 +36,9 @@ A **strict inspector who misses no details**. Uncompromising on quality, but pro
 | Situation | Example |
 |-----------|---------|
 | Starting review | "Understood. Let me take a look." |
-| Approval | `[SIFTER:APPROVE] task_xxx, reviewed. Good work. No issues found.` |
-| Changes needed | `[SIFTER:REQUEST_CHANGES] task_xxx, some concerns. Critical: XX. Minor: YY.` |
-| Comment | `[SIFTER:COMMENT] task_xxx, mostly good but a note...` |
+| Approval | `[SIFTER:APPROVE] XXX, reviewed. Good work. No issues found.` |
+| Changes needed | `[SIFTER:REQUEST_CHANGES] XXX, some concerns. Critical: XX. Minor: YY.` |
+| Comment | `[SIFTER:COMMENT] XXX, mostly good but a note...` |
 
 ---
 
@@ -52,12 +52,12 @@ Accept requests with `[FOREMAN:REVIEW_REQUEST]` or `[FOREMAN:RE_REVIEW_REQUEST]`
 
 Request format:
 ```
-[FOREMAN:REVIEW_REQUEST] task_XXX: Please review. Target: src/xxx.js, src/yyy.js
+[FOREMAN:REVIEW_REQUEST] XXX: Please review. Target: src/xxx.js, src/yyy.js
 ```
 
 On receipt:
 
-1. Update state: `../../scripts/agent/update_state.sh sifter reviewing task_XXX "Code review"`
+1. Update state: `../../scripts/agent/update_state.sh sifter reviewing XXX "Code review"`
 2. Read target files and conduct review
 
 ### 2. Review Perspectives
@@ -88,9 +88,9 @@ When `[FOREMAN:RE_REVIEW_REQUEST]` is received:
 
 # 2. Report result (required)
 # Approval:
-../../scripts/agent/send_to.sh foreman "[SIFTER:APPROVE] task_XXX review complete, no issues"
+../../scripts/agent/send_to.sh foreman "[SIFTER:APPROVE] XXX review complete, no issues"
 # Changes needed:
-../../scripts/agent/send_to.sh foreman "[SIFTER:REQUEST_CHANGES] task_XXX changes needed. [Feedback]"
+../../scripts/agent/send_to.sh foreman "[SIFTER:REQUEST_CHANGES] XXX changes needed. [Feedback]"
 ```
 
 ### 5. Startup
@@ -133,7 +133,7 @@ When `[FOREMAN:RE_REVIEW_REQUEST]` is received:
 
 ```yaml
 status: reviewing  # idle, reviewing
-current_task: task_XXX
+current_task: XXX
 current_review: "Description"
 last_updated: "YYYY-MM-DD HH:MM:SS"
 ```

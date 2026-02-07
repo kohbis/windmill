@@ -3,11 +3,11 @@
 # User: All agents
 #
 # Examples:
-#   ./scripts/agent/update_state.sh miller working task_xxx
-#   ./scripts/agent/update_state.sh miller working task_xxx "Implementing"
+#   ./scripts/agent/update_state.sh miller working XXX
+#   ./scripts/agent/update_state.sh miller working XXX "Implementing"
 #   ./scripts/agent/update_state.sh miller idle
-#   ./scripts/agent/update_state.sh miller blocked task_xxx "Stopped due to API error"
-#   ./scripts/agent/update_state.sh sifter reviewing task_xxx
+#   ./scripts/agent/update_state.sh miller blocked XXX "Stopped due to API error"
+#   ./scripts/agent/update_state.sh sifter reviewing XXX
 
 set -e
 
@@ -33,12 +33,12 @@ Status list:
   gleaner:  inactive, idle, researching
 
 Examples:
-  update_state.sh miller working task_20260130_auth "Starting implementation"
-  update_state.sh miller blocked task_20260130_auth "External API connection error"
+  update_state.sh miller working 20260130_impl_auth_feat "Starting implementation"
+  update_state.sh miller blocked 20260130_impl_auth_feat "External API connection error"
   update_state.sh miller idle
-  update_state.sh sifter reviewing task_20260130_auth "Code review in progress"
-  update_state.sh gleaner researching task_20260130_auth "Researching libraries"
-  update_state.sh foreman waiting_patron task_20260130_auth "Waiting for patron decision"
+  update_state.sh sifter reviewing 20260130_impl_auth_feat "Code review in progress"
+  update_state.sh gleaner researching 20260130_impl_auth_feat "Researching libraries"
+  update_state.sh foreman waiting_patron 20260130_impl_auth_feat "Waiting for patron decision"
 
 Notes:
   - When idle/inactive, current_task and progress are automatically cleared

@@ -1,6 +1,6 @@
 # Windmill Task Template
-# Filename: task_YYYYMMDD_summary.yaml
-# Example: task_20260130_auth_feature.yaml
+# Filename: YYYYMMDD_slug_slug_slug.yaml  (3-5 tokens after date)
+# Example: 20260130_impl_auth_feature.yaml
 
 id: TASK_ID_PLACEHOLDER
 title: "TITLE_PLACEHOLDER"

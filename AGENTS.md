@@ -67,13 +67,13 @@ grist/
 Quick usage:
 ```bash
 ./scripts/agent/create_task.sh "Implement auth" "Step 1" "Step 2"
-./scripts/agent/update_plan.sh task_20260130_auth "React" "Reason" "medium" "Step A" "Step B"
-./scripts/agent/update_plan.sh --approve task_20260130_auth
-./scripts/agent/move_task.sh task_20260130_auth in_progress miller
-./scripts/agent/send_to.sh miller "Process tasks/in_progress/task_20260130_auth.yaml"
-./scripts/agent/log_work.sh task_20260130_auth "Started implementation"
-./scripts/agent/update_state.sh miller working task_20260130_auth "Started"
-./scripts/agent/complete_task.sh task_20260130_auth "Summary" "passed"
+./scripts/agent/update_plan.sh 20260130_impl_auth_feat "React" "Reason" "medium" "Step A" "Step B"
+./scripts/agent/update_plan.sh --approve 20260130_impl_auth_feat
+./scripts/agent/move_task.sh 20260130_impl_auth_feat in_progress miller
+./scripts/agent/send_to.sh miller "Process tasks/in_progress/20260130_impl_auth_feat.yaml"
+./scripts/agent/log_work.sh 20260130_impl_auth_feat "Started implementation"
+./scripts/agent/update_state.sh miller working 20260130_impl_auth_feat "Started"
+./scripts/agent/complete_task.sh 20260130_impl_auth_feat "Summary" "passed"
 ```
 
 ## Running the System
@@ -125,8 +125,8 @@ Do not send message + Enter in one call.
 
 ## Task YAML Format
 ```yaml
-# Filename: task_YYYYMMDD_summary.yaml
-id: task_YYYYMMDD_summary
+# Filename: YYYYMMDD_slug_slug_slug.yaml  (3-5 tokens after date)
+id: YYYYMMDD_slug_slug_slug
 title: "Task description"
 status: planning  # planning, pending, in_progress, review, completed, failed
 assigned_to: null  # miller, sifter, gleaner
@@ -202,13 +202,13 @@ Only Foreman moves task files between `pending/`, `in_progress/`, `completed/`, 
 
 Gleaner (Researcher) request:
 ```
-[FOREMAN:RESEARCH_REQUEST] task_20260130_state_mgmt: Please research React state management methods.
+[FOREMAN:RESEARCH_REQUEST] 20260130_react_state_mgmt: Please research React state management methods.
 Research points: Redux vs Context API comparison, recommended use cases
 ```
 
 Sifter (Reviewer) request:
 ```
-[FOREMAN:REVIEW_REQUEST] task_20260130_auth: Please review the following files.
+[FOREMAN:REVIEW_REQUEST] 20260130_impl_auth_feat: Please review the following files.
 Target: src/auth.js, src/middleware.js
 ```
 

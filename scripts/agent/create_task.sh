@@ -20,7 +20,7 @@ Creates a task YAML in tasks/pending/.
 Template: Uses tasks/task.yaml.template
 
 Options:
-  --id <id>       Specify custom ID (default: task_YYYYMMDD_<slug>)
+  --id <id>       Specify custom ID (default: YYYYMMDD_<3-5 token slug>)
   --context <text> Add context information
   --status <status> Initial status (default: planning)
   -h, --help      Show this help
@@ -31,7 +31,7 @@ Status:
 
 Examples:
   create_task.sh "Implement authentication" "Create login screen" "API integration" "Add tests"
-  create_task.sh --id task_20260130_auth "Authentication" "Step 1"
+  create_task.sh --id 20260130_impl_auth_feat "Authentication" "Step 1"
   create_task.sh --context "Continuation from before" "Bug fix" "Investigate cause" "Implement fix"
   create_task.sh --status pending "Simple fix" "Fix typo"
 EOF
@@ -81,14 +81,19 @@ STEPS=("$@")
 if [ -n "$CUSTOM_ID" ]; then
     TASK_ID="$CUSTOM_ID"
 else
-    # Generate slug from title (simple version: first word in romaji/english)
     DATE_PART=$(date '+%Y%m%d')
-    # Use first 20 characters of title, replace spaces with underscores
-    SLUG=$(echo "$TITLE" | cut -c1-20 | sed 's/ /_/g' | sed 's/[^a-zA-Z0-9_]//g' | tr '[:upper:]' '[:lower:]')
+    # Generate slug: split title into words, take 3-5 tokens, lowercase
+    SLUG=$(echo "$TITLE" | sed 's/[^a-zA-Z0-9 ]//g' | tr '[:upper:]' '[:lower:]' | tr -s ' ' '\n' | head -5 | tail -5 | tr '\n' '_' | sed 's/_$//')
+    # Ensure minimum 3 tokens (pad with "task" if needed)
+    TOKEN_COUNT=$(echo "$SLUG" | tr '_' '\n' | wc -l | tr -d ' ')
+    while [ "$TOKEN_COUNT" -lt 3 ]; do
+        SLUG="${SLUG}_task"
+        TOKEN_COUNT=$((TOKEN_COUNT + 1))
+    done
     if [ -z "$SLUG" ]; then
-        SLUG="task"
+        SLUG="unnamed_task_item"
     fi
-    TASK_ID="task_${DATE_PART}_${SLUG}"
+    TASK_ID="${DATE_PART}_${SLUG}"
 fi
 
 TASK_FILE="$MILL_ROOT/tasks/pending/${TASK_ID}.yaml"
