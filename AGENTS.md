@@ -175,13 +175,13 @@ tmux send-keys -t windmill:windmill.4 'claude --dangerously-skip-permissions' En
 #### For OpenAI Codex CLI
 ```bash
 # Miller (Implementer)
-tmux send-keys -t windmill:windmill.2 'codex --sandbox workspace-write --ask-for-approval never' Enter
+tmux send-keys -t windmill:windmill.2 'codex --dangerously-bypass-approvals-and-sandbox' Enter
 
 # Gleaner (Researcher)
-tmux send-keys -t windmill:windmill.3 'codex --sandbox workspace-write --ask-for-approval never' Enter
+tmux send-keys -t windmill:windmill.3 'codex --dangerously-bypass-approvals-and-sandbox' Enter
 
 # Sifter (Reviewer)
-tmux send-keys -t windmill:windmill.4 'codex --sandbox workspace-write --ask-for-approval never' Enter
+tmux send-keys -t windmill:windmill.4 'codex --dangerously-bypass-approvals-and-sandbox' Enter
 ```
 
 #### For GitHub Copilot CLI
@@ -423,8 +423,8 @@ claude --dangerously-skip-permissions
 # Normal (suggestion mode)
 codex
 
-# Automatic execution mode (sandbox enabled, no approval prompts)
-codex --sandbox workspace-write --ask-for-approval never
+# Automatic execution mode (no sandbox, no approval prompts)
+codex --dangerously-bypass-approvals-and-sandbox
 ```
 
 ### GitHub Copilot CLI

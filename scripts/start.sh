@@ -42,7 +42,7 @@ get_agent_cmd() {
             echo "claude --dangerously-skip-permissions"
             ;;
         codex|x)
-            echo "codex --sandbox workspace-write --ask-for-approval never"
+            echo "codex --dangerously-bypass-approvals-and-sandbox"
             ;;
         copilot|g)
             echo "copilot --allow-all"
