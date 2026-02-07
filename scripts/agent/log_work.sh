@@ -67,18 +67,20 @@ else
     action: \"$ACTION\""
 fi
 
-# Detect and replace work_log: [] (empty array)
+# Append work_log entry (using awk for both empty and existing cases)
+TEMP_FILE=$(mktemp)
 if grep -q "^work_log: \[\]" "$TASK_FILE"; then
     # Convert empty array to expanded format
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        sed -i '' "s/^work_log: \[\]/work_log:\n$LOG_ENTRY/" "$TASK_FILE"
-    else
-        sed -i "s/^work_log: \[\]/work_log:\n$LOG_ENTRY/" "$TASK_FILE"
-    fi
+    awk -v entry="$LOG_ENTRY" '
+        /^work_log: \[\]/ {
+            print "work_log:"
+            print entry
+            next
+        }
+        { print }
+    ' "$TASK_FILE" > "$TEMP_FILE"
 else
     # Append to existing work_log
-    # Append after work_log: line (using awk)
-    TEMP_FILE=$(mktemp)
     awk -v entry="$LOG_ENTRY" '
         /^work_log:/ {
             print
@@ -87,8 +89,8 @@ else
         }
         { print }
     ' "$TASK_FILE" > "$TEMP_FILE"
-    mv "$TEMP_FILE" "$TASK_FILE"
 fi
+mv "$TEMP_FILE" "$TASK_FILE"
 
 echo "work_log appended: $TASK_ID"
 echo "  timestamp: $TIMESTAMP"
