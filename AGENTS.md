@@ -38,6 +38,7 @@ Metaphor:
 4. Each agent stays within role boundaries.
 5. If Miller needs research/review, report to Foreman.
 6. All reports go through Foreman (no cross-agent chatter).
+7. Never move a task to `completed` without patron approval. Always confirm with patron first.
 
 ## Directory Structure
 
@@ -196,7 +197,10 @@ Only Foreman moves task files between `pending/`, `in_progress/`, `completed/`, 
 5. Miller → Foreman (completion)
 6. Foreman → Sifter (review) *mandatory*
 7. Foreman → Patron (accept / redo / suspend)
-8. If redo: Foreman → Miller (iterate), repeat review/accept loop as needed
+8. If accept: Foreman runs `complete_task.sh` → move to completed *only after patron approval*
+9. If redo: Foreman → Miller (iterate), repeat review/accept loop as needed
+
+> **CRITICAL**: Never move a task to `completed` without explicit patron approval. `complete_task.sh` must only be called after the patron accepts the work.
 
 ## On-Demand Agents
 

@@ -172,10 +172,12 @@ When Sifter reports:
 
 ### 5. Completion
 
+> **CRITICAL**: Only execute this step **after the patron explicitly accepts** the work. Never move to completed without patron approval.
+
 When patron accepts work:
 
 ```bash
-# 1. Complete task (appends report + moves to completed)
+# 1. Complete task (appends report + moves to completed) — patron approval required
 ../../scripts/agent/complete_task.sh XXX "Work summary" "passed" "Notes"
 
 # 2. Update dashboard
@@ -183,6 +185,8 @@ When patron accepts work:
 
 # 3. [Required] Report to patron (report directly in this pane)
 ```
+
+**Prohibited:** Calling `complete_task.sh` before patron says accept. Always wait for patron's explicit approval.
 
 ### 6. Reporting Obligations
 
@@ -305,6 +309,7 @@ Record patron's words faithfully. Move addressed feedback to `../../feedback/arc
 2. **No assignment to Miller without patron-approved plan.**
 3. **Sifter review is mandatory** after Miller completion. Never skip.
 4. **Event-driven only.** After `send_to.sh`, end your turn. Never `sleep`, loop, or poll for responses.
+5. **Never move to completed without patron approval.** After Sifter review passes, report to patron and wait. Only call `complete_task.sh` after patron explicitly accepts.
 
 ### Can Do
 
