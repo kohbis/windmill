@@ -143,6 +143,11 @@ fi
 
 echo "Starting Windmill..."
 
+# Reset dashboard from template
+TIMESTAMP=$(date '+%Y-%m-%d %H:%M')
+sed "s/YYYY-MM-DD HH:MM/$TIMESTAMP/g" "$MILL_ROOT/dashboard.md.template" > "$MILL_ROOT/dashboard.md"
+echo "Dashboard reset: dashboard.md"
+
 # Create tmux session
 tmux new-session -d -s "$SESSION_NAME" -n "$WINDOW_NAME" -x 200 -y 50
 
