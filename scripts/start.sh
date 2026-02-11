@@ -148,10 +148,8 @@ TIMESTAMP=$(date '+%Y-%m-%d %H:%M')
 sed "s/YYYY-MM-DD HH:MM/$TIMESTAMP/g" "$MILL_ROOT/dashboard.md.template" > "$MILL_ROOT/dashboard.md"
 echo "Dashboard reset: dashboard.md"
 
-# Create tmux session
+# Create tmux session (detached, works both inside and outside tmux)
 tmux new-session -d -s "$SESSION_NAME" -n "$WINDOW_NAME" -x 200 -y 50
-
-# Wait for session creation
 sleep 0.2
 
 echo "Creating pane structure..."
@@ -250,7 +248,7 @@ sleep 0.2
 # Select Foreman pane
 tmux select-pane -t "$SESSION_NAME:$WINDOW_NAME.1"
 
-echo "Created tmux session '$SESSION_NAME'"
+echo "Created tmux window '$WINDOW_NAME' in session '$SESSION_NAME'"
 echo ""
 echo "Agent configuration:"
 echo "  [1] Foreman: $(get_agent_name "$FOREMAN_AGENT")"
@@ -265,7 +263,7 @@ echo "   │ [0] Status  ├─────────────┼───�
 echo "   │             │ [4] Sifter  │ [3] Gleaner │"
 echo "   └─────────────┴─────────────┴─────────────┘"
 echo ""
-echo "Connect: tmux attach -t $SESSION_NAME"
+echo "Connect: tmux attach -t $SESSION_NAME:$WINDOW_NAME"
 echo ""
 echo "All agents are at their posts"
 echo "   Emergency stop: Ctrl+C or ./scripts/stop.sh"
