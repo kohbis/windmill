@@ -40,17 +40,10 @@ TASK_ID="$1"
 ACTION="$2"
 DETAILS="${3:-}"
 
-# Find task file
-TASK_FILE=""
-for dir in pending in_progress completed failed; do
-    if [ -f "$MILL_ROOT/tasks/$dir/${TASK_ID}.yaml" ]; then
-        TASK_FILE="$MILL_ROOT/tasks/$dir/${TASK_ID}.yaml"
-        break
-    fi
-done
-
-if [ -z "$TASK_FILE" ]; then
-    echo "Error: Task '$TASK_ID' not found"
+# Find task file directly
+TASK_FILE="$MILL_ROOT/tasks/${TASK_ID}.yaml"
+if [ ! -f "$TASK_FILE" ]; then
+    echo "Error: Task '$TASK_ID' not found: $TASK_FILE"
     exit 1
 fi
 

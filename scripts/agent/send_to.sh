@@ -3,7 +3,7 @@
 # User: All agents
 #
 # Examples:
-#   ./scripts/agent/send_to.sh miller "Please process tasks/in_progress/XXX.yaml"
+#   ./scripts/agent/send_to.sh miller "Please process tasks/XXX.yaml"
 #   ./scripts/agent/send_to.sh foreman "[MILLER:DONE] XXX completed"
 #   ./scripts/agent/send_to.sh sifter "[FOREMAN:REVIEW_REQUEST] XXX: Please review src/auth.js"
 
@@ -31,7 +31,7 @@ Agent names:
   status   - Status screen (pane 0)
 
 Examples:
-  send_to.sh miller "[FOREMAN:ASSIGN] Please process tasks/in_progress/XXX.yaml"
+  send_to.sh miller "[FOREMAN:ASSIGN] Please process tasks/XXX.yaml"
   send_to.sh foreman "[MILLER:DONE] XXX completed"
   send_to.sh gleaner "[FOREMAN:RESEARCH_REQUEST] XXX: Please research React state management"
   send_to.sh sifter "[FOREMAN:REVIEW_REQUEST] XXX: Please review src/auth.js"

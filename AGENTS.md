@@ -44,8 +44,7 @@ Metaphor:
 
 ```
 grist/
-├── tasks/       # pending, in_progress, completed, failed
-├── state/       # foreman.yaml, miller.yaml, sifter.yaml, gleaner.yaml
+├── tasks/       # all task YAML files (status field tracks state)
 ├── agents/      # role prompts
 ├── scripts/     # operations
 ├── dashboard.md # updated by Foreman
@@ -58,12 +57,11 @@ grist/
 |--------|------|---------|
 | `create_task.sh` | Foreman | Create task YAML (status: planning) |
 | `update_plan.sh` | Foreman | Add plan + record approval |
-| `move_task.sh` | Foreman | Move tasks between states |
+| `move_task.sh` | Foreman | Update task status/assignee fields |
 | `send_to.sh` | All | Send message to agent (tmux wrapper) |
-| `update_state.sh` | All | Update agent state files |
 | `log_work.sh` | Foreman, Miller | Append task work_log |
 | `update_dashboard.sh` | Foreman | Refresh dashboard |
-| `complete_task.sh` | Foreman | Append completion report + move to completed |
+| `complete_task.sh` | Foreman | Append completion report + set completed status |
 
 Quick usage:
 ```bash
@@ -71,9 +69,8 @@ Quick usage:
 ./scripts/agent/update_plan.sh 20260130_impl_auth_feat "React" "Reason" "medium" "Step A" "Step B"
 ./scripts/agent/update_plan.sh --approve 20260130_impl_auth_feat
 ./scripts/agent/move_task.sh 20260130_impl_auth_feat in_progress miller
-./scripts/agent/send_to.sh miller "Process tasks/in_progress/20260130_impl_auth_feat.yaml"
+./scripts/agent/send_to.sh miller "Process tasks/20260130_impl_auth_feat.yaml"
 ./scripts/agent/log_work.sh 20260130_impl_auth_feat "Started implementation"
-./scripts/agent/update_state.sh miller working 20260130_impl_auth_feat "Started"
 ./scripts/agent/complete_task.sh 20260130_impl_auth_feat "Summary" "passed"
 ```
 
@@ -187,7 +184,7 @@ result:
 | `failed` | Suspended | Blocked/On hold |
 
 ### Task Movement Permissions
-Only Foreman moves task files between `pending/`, `in_progress/`, `completed/`, `failed/`.
+Only Foreman updates task `status` and `assigned_to` fields.
 
 ### Task Flow
 1. Patron → Foreman (task)
@@ -197,7 +194,7 @@ Only Foreman moves task files between `pending/`, `in_progress/`, `completed/`, 
 5. Miller → Foreman (completion)
 6. Foreman → Sifter (review) *mandatory*
 7. Foreman → Patron (accept / redo / suspend)
-8. If accept: Foreman runs `complete_task.sh` → move to completed *only after patron approval*
+8. If accept: Foreman runs `complete_task.sh` → status becomes `completed` *only after patron approval*
 9. If redo: Foreman → Miller (iterate), repeat review/accept loop as needed
 
 > **CRITICAL**: Never move a task to `completed` without explicit patron approval. `complete_task.sh` must only be called after the patron accepts the work.

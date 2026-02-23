@@ -16,7 +16,7 @@ show_help() {
     cat << EOF
 Usage: create_task.sh [OPTIONS] "<title>" "<step1>" [<step2>...]
 
-Creates a task YAML in tasks/pending/.
+Creates a task YAML in tasks/.
 Template: Uses tasks/task.yaml.template
 
 Options:
@@ -96,7 +96,7 @@ else
     TASK_ID="${DATE_PART}_${SLUG}"
 fi
 
-TASK_FILE="$MILL_ROOT/tasks/pending/${TASK_ID}.yaml"
+TASK_FILE="$MILL_ROOT/tasks/${TASK_ID}.yaml"
 
 # Check if exists
 if [ -f "$TASK_FILE" ]; then

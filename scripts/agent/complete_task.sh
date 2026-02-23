@@ -15,7 +15,7 @@ show_help() {
     cat << EOF
 Usage: complete_task.sh <task_id> "<summary>" "<test_status>" ["<notes>"]
 
-Appends completion report (result section) to task YAML and moves to completed.
+Appends completion report (result section) to task YAML.
 
 Arguments:
   task_id       Task ID (e.g., 20260130_impl_auth_feat)
@@ -52,18 +52,10 @@ case "$TEST_STATUS" in
         ;;
 esac
 
-# Find task file (prioritize in_progress)
-TASK_FILE=""
-for dir in in_progress pending; do
-    if [ -f "$MILL_ROOT/tasks/$dir/${TASK_ID}.yaml" ]; then
-        TASK_FILE="$MILL_ROOT/tasks/$dir/${TASK_ID}.yaml"
-        FROM_DIR="$dir"
-        break
-    fi
-done
-
-if [ -z "$TASK_FILE" ]; then
-    echo "Error: Task '$TASK_ID' not found (in_progress or pending)"
+# Find task file directly
+TASK_FILE="$MILL_ROOT/tasks/${TASK_ID}.yaml"
+if [ ! -f "$TASK_FILE" ]; then
+    echo "Error: Task '$TASK_ID' not found: $TASK_FILE"
     exit 1
 fi
 
@@ -77,7 +69,7 @@ ASSIGNED_TO=$(grep "^assigned_to:" "$TASK_FILE" | sed 's/^assigned_to: *//' | tr
 # Check if completed_at already exists
 if grep -q "^completed_at:" "$TASK_FILE"; then
     echo "Warning: This task already has a completion report appended"
-    echo "Moving only without overwriting"
+    echo "Keeping existing completion report without overwriting"
 else
     # Append completion report
     cat >> "$TASK_FILE" << EOF
@@ -108,13 +100,9 @@ else
     sed -i "s/^status: .*/status: completed/" "$TASK_FILE"
 fi
 
-# Move to completed directory
-DEST_FILE="$MILL_ROOT/tasks/completed/${TASK_ID}.yaml"
-mv "$TASK_FILE" "$DEST_FILE"
-
 echo "Completion processed: $TASK_ID"
 echo "  Summary: $SUMMARY"
 echo "  Tests: $TEST_STATUS"
 echo "  Completed by: $ASSIGNED_TO"
-echo "  Moved: $FROM_DIR → completed"
-echo "  File: $DEST_FILE"
+echo "  Status: completed"
+echo "  File: $TASK_FILE"

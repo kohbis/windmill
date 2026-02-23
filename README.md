@@ -122,12 +122,7 @@ windmill/
 │   ├── miller/
 │   ├── sifter/
 │   └── gleaner/
-├── tasks/            # Task management
-│   ├── pending/      # Pending
-│   ├── in_progress/  # In progress
-│   ├── completed/    # Completed
-│   └── failed/       # Failed/Suspended
-├── state/            # Agent state (YAML)
+├── tasks/            # Task YAML files (status field tracks state)
 ├── feedback/         # Feedback
 ├── scripts/          # Operation scripts
 │   └── agent/        # Agent scripts
