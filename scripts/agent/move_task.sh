@@ -16,18 +16,20 @@ show_help() {
     cat << EOF
 Usage: move_task.sh <task_id> <to_status> [assigned_to]
 
-Transitions (moves) a task to the specified status.
+Transitions (updates) a task to the specified status.
 
 Arguments:
   task_id      Task ID (e.g., 20260130_impl_auth_feat)
-  to_status    Destination status: pending, in_progress, completed, failed
-  assigned_to  Assignee (required for in_progress): miller, sifter, gleaner
+  to_status    Destination status: planning, pending, in_progress, review, completed, failed
+  assigned_to  Assignee (required for in_progress/review/planning): miller, sifter, gleaner
 
 Examples:
-  move_task.sh 20260130_impl_auth_feat in_progress miller  # Assign to Miller
-  move_task.sh 20260130_impl_auth_feat completed           # Complete
-  move_task.sh 20260130_impl_auth_feat failed              # Suspend/On hold
-  move_task.sh 20260130_impl_auth_feat pending             # Return to pending
+  move_task.sh 20260130_impl_auth_feat planning gleaner     # Assign planning to Gleaner
+  move_task.sh 20260130_impl_auth_feat in_progress miller   # Assign to Miller
+  move_task.sh 20260130_impl_auth_feat review sifter        # Assign review to Sifter
+  move_task.sh 20260130_impl_auth_feat completed            # Complete
+  move_task.sh 20260130_impl_auth_feat failed               # Suspend/On hold
+  move_task.sh 20260130_impl_auth_feat pending              # Return to pending
 EOF
     exit 0
 }
@@ -43,45 +45,44 @@ ASSIGNED_TO="${3:-null}"
 
 # Status validation
 case "$TO_STATUS" in
-    pending|in_progress|completed|failed)
+    planning|pending|in_progress|review|completed|failed)
         ;;
     *)
         echo "Error: Invalid status '$TO_STATUS'"
-        echo "Valid statuses: pending, in_progress, completed, failed"
+        echo "Valid statuses: planning, pending, in_progress, review, completed, failed"
         exit 1
         ;;
 esac
 
-# in_progress requires assigned_to
-if [ "$TO_STATUS" = "in_progress" ] && [ "$ASSIGNED_TO" = "null" ]; then
-    echo "Error: in_progress requires assignee (assigned_to)"
-    echo "Usage: move_task.sh $TASK_ID in_progress <miller|sifter|gleaner>"
+# in_progress/review/planning require assigned_to
+if [ "$ASSIGNED_TO" = "null" ]; then
+    case "$TO_STATUS" in
+        in_progress|review|planning)
+            echo "Error: $TO_STATUS requires assignee (assigned_to)"
+            echo "Usage: move_task.sh $TASK_ID $TO_STATUS <miller|sifter|gleaner>"
+            exit 1
+            ;;
+    esac
+fi
+
+# Find task file directly
+TASK_FILE="$MILL_ROOT/tasks/${TASK_ID}.yaml"
+if [ ! -f "$TASK_FILE" ]; then
+    echo "Error: Task '$TASK_ID' not found: $TASK_FILE"
     exit 1
 fi
 
-# Find task file
-TASK_FILE=""
-for dir in pending in_progress completed failed; do
-    if [ -f "$MILL_ROOT/tasks/$dir/${TASK_ID}.yaml" ]; then
-        TASK_FILE="$MILL_ROOT/tasks/$dir/${TASK_ID}.yaml"
-        FROM_STATUS="$dir"
-        break
-    fi
-done
+# Current status
+FROM_STATUS=$(grep "^status:" "$TASK_FILE" | sed 's/^status: *//' | tr -d '"')
 
-if [ -z "$TASK_FILE" ]; then
-    echo "Error: Task '$TASK_ID' not found"
-    exit 1
-fi
+# Check current assignee
+CURRENT_ASSIGNED=$(grep "^assigned_to:" "$TASK_FILE" | sed 's/^assigned_to: *//' | tr -d '"')
 
-# Moving to same status is unnecessary
-if [ "$FROM_STATUS" = "$TO_STATUS" ]; then
-    echo "Task is already in $TO_STATUS"
+# Skip if both status and assignee are unchanged
+if [ "$FROM_STATUS" = "$TO_STATUS" ] && [ "$CURRENT_ASSIGNED" = "$ASSIGNED_TO" ]; then
+    echo "Task is already in $TO_STATUS (assigned: $ASSIGNED_TO)"
     exit 0
 fi
-
-# Destination path
-DEST_FILE="$MILL_ROOT/tasks/$TO_STATUS/${TASK_ID}.yaml"
 
 # Timestamp
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
@@ -105,10 +106,7 @@ if [ "$TO_STATUS" = "completed" ]; then
     fi
 fi
 
-# Move file
-mv "$TASK_FILE" "$DEST_FILE"
-
-echo "Moved: $FROM_STATUS → $TO_STATUS"
+echo "Status updated: $FROM_STATUS → $TO_STATUS"
 echo "  Task: $TASK_ID"
 echo "  Assigned: $ASSIGNED_TO"
-echo "  File: $DEST_FILE"
+echo "  File: $TASK_FILE"

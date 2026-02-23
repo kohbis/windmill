@@ -61,6 +61,11 @@ done
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M')
 TIME_ONLY=$(date '+%H:%M')
 
+# Build task file list from flat tasks directory
+shopt -s nullglob
+TASK_FILES=("$MILL_ROOT/tasks"/*.yaml)
+shopt -u nullglob
+
 # Log append only mode
 if [ "$LOG_ONLY" = true ] && [ -n "$LOG_MESSAGE" ]; then
     if [ -f "$DASHBOARD" ]; then
@@ -85,12 +90,14 @@ fi
 # Full update
 # Collect in-progress tasks
 IN_PROGRESS=""
-for task_file in "$MILL_ROOT/tasks/in_progress"/*.yaml; do
-    if [ -f "$task_file" ]; then
+for task_file in "${TASK_FILES[@]}"; do
+    task_status=$(get_yaml_value "$task_file" "status")
+    if [ "$task_status" = "in_progress" ]; then
         task_id=$(get_yaml_value "$task_file" "id")
         task_title=$(get_yaml_value "$task_file" "title")
         assigned=$(get_yaml_value "$task_file" "assigned_to")
         [[ "$assigned" == "null" ]] && assigned="unassigned"
+        [ -z "$task_id" ] && task_id="$(basename "$task_file" .yaml)"
         IN_PROGRESS="${IN_PROGRESS}- [ ] ${task_id}: ${task_title} (${assigned} assigned)\n"
     fi
 done
@@ -98,23 +105,34 @@ done
 
 # Collect completed tasks (latest 5)
 COMPLETED=""
-completed_files=$(ls -t "$MILL_ROOT/tasks/completed"/*.yaml 2>/dev/null | head -5)
+completed_count=0
+if [ ${#TASK_FILES[@]} -gt 0 ]; then
+    completed_files=$(ls -t "${TASK_FILES[@]}" 2>/dev/null || true)
+else
+    completed_files=""
+fi
 for task_file in $completed_files; do
-    if [ -f "$task_file" ]; then
+    task_status=$(get_yaml_value "$task_file" "status")
+    if [ "$task_status" = "completed" ]; then
         task_id=$(get_yaml_value "$task_file" "id")
         task_title=$(get_yaml_value "$task_file" "title")
+        [ -z "$task_id" ] && task_id="$(basename "$task_file" .yaml)"
         COMPLETED="${COMPLETED}- [x] ${task_id}: ${task_title}\n"
+        completed_count=$((completed_count + 1))
+        [ "$completed_count" -ge 5 ] && break
     fi
 done
 [ -z "$COMPLETED" ] && COMPLETED="(none)\n"
 
-# Collect pending tasks
+# Collect pending/planning tasks
 PENDING=""
-for task_file in "$MILL_ROOT/tasks/pending"/*.yaml; do
-    if [ -f "$task_file" ]; then
+for task_file in "${TASK_FILES[@]}"; do
+    task_status=$(get_yaml_value "$task_file" "status")
+    if [ "$task_status" = "pending" ] || [ "$task_status" = "planning" ]; then
         task_id=$(get_yaml_value "$task_file" "id")
         task_title=$(get_yaml_value "$task_file" "title")
-        PENDING="${PENDING}- ${task_id}: ${task_title}\n"
+        [ -z "$task_id" ] && task_id="$(basename "$task_file" .yaml)"
+        PENDING="${PENDING}- ${task_id}: ${task_title} (${task_status})\n"
     fi
 done
 

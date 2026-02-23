@@ -87,18 +87,10 @@ fi
 TASK_ID="$1"
 shift
 
-# Search for task file
-TASK_FILE=""
-for dir in pending in_progress; do
-    if [ -f "$MILL_ROOT/tasks/$dir/${TASK_ID}.yaml" ]; then
-        TASK_FILE="$MILL_ROOT/tasks/$dir/${TASK_ID}.yaml"
-        break
-    fi
-done
-
-if [ -z "$TASK_FILE" ]; then
-    echo "Error: Task file not found: $TASK_ID"
-    echo "Check tasks/pending/ or tasks/in_progress/"
+# Search for task file directly
+TASK_FILE="$MILL_ROOT/tasks/${TASK_ID}.yaml"
+if [ ! -f "$TASK_FILE" ]; then
+    echo "Error: Task file not found: $TASK_FILE"
     exit 1
 fi
 
